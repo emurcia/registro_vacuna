@@ -320,11 +320,29 @@
         	$('#role').modal('show');
 		if(role_user != 1 && role_user != 2)
 			$('#role').modal('show');
+
+		// 1: operador, 2: registrador
+		if(role_user == 1){
+			$('#role').modal('hide');
+			setCookie('role_user',1,1);
+		}
+
+		if(role_user == 2){
+			$('#role').modal('hide');
+			minsal_ui_cargar_vista('agendar');
+			setCookie('role_user',2,1);
+		}
+			
 	}
 
 	$('#bt_reg').click(function(){
-		minsal_ui_cargar_vista('agendar');
-	
+		$('#role').modal('hide');
+		setCookie('role_user',2,1);
+		minsal_ui_cargar_vista('agendar');	
+	});
+	$('#bt_ope').click(function(){
+		setCookie('role_user',1,1);
+		$('#role').modal('hide');	
 	});
 	$('#bt_save').click(function(){
 		
@@ -380,6 +398,7 @@
 	$("#bt_close").click(function () {
 		destCookie();
 		setCookie("cambio","",-1);
+		destCookie2('role_user');
 		//minsal_ui_cargar_vista('login')
 	});
 	$(document).ready(function(){
