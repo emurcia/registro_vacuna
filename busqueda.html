@@ -19,6 +19,13 @@
 
 	var mask = IMask(element, maskOptions);*/
 
+	//-----------------------------------------------------------//
+	//													         //
+	/**/ var tipo_rol = 0;  	// 1: operador, 2: registrador	 //
+	//															 //
+	//-----------------------------------------------------------//
+
+
 	$("#v1").click(function () {
 		$('#bl3').hide();
 		$('#v1').css({
@@ -381,6 +388,7 @@
 			}*/
 			
 		//}
+		$('#role').modal({backdrop: 'static', keyboard: false});
 		loadSelectRole();
 	});
 
@@ -538,9 +546,7 @@
 		  	<div class="modal-content">
 				<div class="modal-header">
 				  <h5 class="modal-title">Seleccionar role</h5>
-				  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-				  </button>
+				  
 				</div>
 				<div class="modal-body">
 				  <p>Estimado usuario, por favor seleccione el role con el que desea trabajar:</p><br>
