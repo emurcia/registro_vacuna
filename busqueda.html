@@ -315,7 +315,11 @@
 	}
 
 	function loadSelectRole(){
-        $('#role').modal('show')
+		var role_user = getCookie('role_user');
+		if(!role_user)
+        	$('#role').modal('show');
+		if(role_user != 1 && role_user != 2)
+			$('#role').modal('show');
 	}
 
 	$('#bt_reg').click(function(){
@@ -549,9 +553,7 @@
 		  	<div class="modal-content">
 				<div class="modal-header">
 				  <h5 class="modal-title">Seleccionar rol</h5>
-				  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-				  </button>
+				  
 				</div>
 				<div class="modal-body">
 				  <p>Estimado usuario, por favor seleccione el rol con el que desea trabajar:</p><br>
