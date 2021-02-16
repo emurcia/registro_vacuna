@@ -311,7 +311,10 @@
         $('#role').modal('show')
 	}
 
-
+	$('#bt_reg').click(function(){
+		minsal_ui_cargar_vista('agendar');
+	
+	});
 	$('#bt_save').click(function(){
 		
 		var password = $('#password').val();
@@ -537,20 +540,20 @@
 		<div class="modal-dialog" role="document">
 		  	<div class="modal-content">
 				<div class="modal-header">
-				  <h5 class="modal-title">Seleccionar role</h5>
+				  <h5 class="modal-title">Seleccionar rol</h5>
 				  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 				  </button>
 				</div>
 				<div class="modal-body">
-				  <p>Estimado usuario, por favor seleccione el role con el que desea trabajar:</p><br>
+				  <p>Estimado usuario, por favor seleccione el rol con el que desea trabajar:</p><br>
 				  
 				  <div class="row">
 					<div class="col-md-4 offset-2">
 						<button class="btn btn-success" id="bt_ope" >Operador</button><br>
 					</div>
 					<div class="col-md-4 offset-2">
-						<button class="btn btn-primary" id="bt_reg" >Registrador</button><br>
+						<button class="btn btn-primary" id="bt_reg" data-dismiss="modal" >Registrador</button><br>
 					</div>
 					
 				  </div>
