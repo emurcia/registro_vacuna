@@ -117,8 +117,9 @@
     if (getCookie('token')) {
       var obj = JSON.parse(getCookie("edata"));
       $('#contenedormenu').load('menu.html', function () {
-
-        var dato_establecimiento = '';
+        
+        minsal_ui_cargar_vista('busqueda');
+        /*var dato_establecimiento = '';
 
         dato_establecimiento = obj['establecimiento_nombre'];
         minsal_verificar_apertura((estado) => {
@@ -140,7 +141,7 @@
             //$('#modal-cerrado').modal();
             minsal_ui_cargar_vista('apertura_cierre')
           }
-        });
+        });*/
       });
     }
     else {
