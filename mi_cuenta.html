@@ -1,0 +1,149 @@
+<style>
+
+</style>
+
+<script>
+    
+var validator = $('#formUpdatePass').validate({
+	rules: {
+		passActual: { required: true, passActual:true }
+	},
+	messages: {
+		passActual: "Por favor escriba su Correo"
+	}
+});
+
+$('#bt_actualizar_pass').click(function () {
+	console.log('llego');
+	event.preventDefault();
+	
+});
+
+$('#bt_actualizar_email').click(function () {
+	console.log('llego');
+	event.preventDefault();
+	
+});
+
+$('#bt_actualizar_estab').click(function () {
+	console.log('llego');
+	event.preventDefault();
+	
+});
+
+$(document).ready(function () {
+	
+});
+	
+$("#bt_close").click(function () {
+	destCookie();
+	minsal_ui_cargar_vista('login')
+});
+
+
+</script>
+
+<div class="contenido" id="contenedor">
+    <h1 class="text-center m-2">MI CUENTA</h1>
+    <div class="text_i"></div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div id="bl1" class="p-4 shadow bg-white round-div">
+                        <p class="text-center m-2"><b>MI PERFIL</b></p>
+                        <hr class="m-2">
+                        <div class="form-group">
+                            <label for="">Nombres</label>
+                            <p><b>Juán José</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Apellidos</label>
+                            <p><b>Peréz Peréz</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Correo electrónico</label>
+                            <p><b>registrador@mail.com</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Teléfono</label>
+                            <p><b>####-####</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">N° de junta de vigilancia</label>
+                            <p><b>######</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Tipo de empleado</label>
+                            <p><b>Registrador</b></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Última conexión</label>
+                            <p><b>24/01/2021 14:23:34</b></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="bl1" class="p-4 shadow bg-white round-div">
+                        <p class="text-center m-2"><b>ACTUALIZAR CONTRASEÑA</b></p>
+                        <hr class="m-2">
+                        <form id="formUpdatePass" action="" method="post" novalidate="novalidate">
+                            <div class="form-group">
+                                <label for="">CONTRASEÑA ACTUAL *</label>
+                                <input type="text" name="passActual" id="passActual" class="form-input" required="required">
+                            </div>
+                            <div class="form-group">
+                                <label for="">CONTRASEÑA NUEVA *</label>
+                                <input type="text" name="passNueva" id="passNueva" class="form-input" required="required">
+                            </div>
+                            <div class="form-group">
+                                <label for="">CONFIRMAR CONTRASEÑA NUEVA *</label>
+                                <input type="text" name="confirmPass" id="confirmPass" class="form-input" required="required">
+                            </div>
+                            <div class="text_r text-xs text-gray-700 mb-1">* Campos requeridos</div>
+                            <div class="form-group text-center">
+                                <button class="btn btn-primary" type="button" id="bt_actualizar_pass">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid mt-2">
+            <div class="row">
+                <div class="col-md-6">
+                    <div id="bl1" class="p-4 shadow bg-white round-div">
+                        <p class="text-center m-2"><b>CAMBIAR ESTABLECIMIENTO</b></p>
+                        <hr class="m-2">
+                        <form id="formUpdateEstab" action="" method="post">
+                            <div class="form-group">
+                                <input type="text" class="form-input" name="estab" id="estab" placeholder="Buscar..">
+                            </div>
+                            <div class="form-group text-center">
+                                <button class="btn btn-primary" type="button" id="bt_actualizar_estab">Guardar</button>
+                            </div>
+                        </form> 
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="bl1" class="p-4 shadow bg-white round-div">
+                        <p class="text-center m-2"><b>ACTUALIZAR EMAIL</b></p>
+                        <hr class="m-2">
+                        <form id="formUpdateEmail" action="" method="post" novalidate="novalidate">
+                            <div class="form-group">
+                                <label for="emailNuevo">EMAIL NUEVO *</label>
+                                <input type="email" name="emailNuevo" id="emailNuevo" class="form-input" required>
+                            <div class="text_r text-xs text-gray-700 mb-1">* Campos requeridos</div>
+                            <div class="form-group text-center">
+                                <button class="btn btn-primary" type="button" id="bt_actualizar_email">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    
+</div>
+<div><br><br><br><br><br></div>

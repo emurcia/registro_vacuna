@@ -1,0 +1,813 @@
+<style>
+#icon_div 			{ width: 100px; }
+		.bt {
+			border-radius: .25rem;
+			padding: .25rem .5rem;
+			border-width: 1px;
+			border-color: transparent;
+			white-space: nowrap;
+			display: inline-block;
+			font-size: 16px;
+		}
+
+		.bt.md {
+			padding: 15px 25px;
+		}
+
+		div.contenido {
+			overflow-y: unset;
+		}
+
+		#icon_img {
+			font-size: 30px;
+			color: white;
+		}
+
+		div#icon_div {
+			position: relative;
+			top: 1px;
+			padding: 5px;
+			margin: 0px auto;
+		}
+
+		div.text_div {
+			vertical-align: middle;
+			padding-top: 30px;
+			height: 130px;
+			width: 100%;
+			text-align: center;
+		}
+
+		div.text_term {
+			padding: 5px;
+			text-align: justify;
+			height: 90px;
+			font-size: 12px;
+			overflow-y: auto;
+			border: 1px solid #e2e8f0;
+		}
+		
+		div.imp_term {
+			padding-top: 5px;
+		}
+
+		div.text_conf {
+			text-align: justify;
+			font-size: 11px;
+			font-weight: bold;
+		}
+
+		#bt_main {
+			height: 5px;
+		}
+
+		#confirm {
+			width: 20px;
+			height: 20px;
+		}
+
+		.text_label {
+			padding-top: 5px;
+			font-weight: bold;
+		}
+
+		.contenedorprincipal {
+			height: 100%;
+			position: relative
+		}
+
+		.atencion1 {
+			color: #317152;
+			background-color: #c6f6d5;
+			border-width: 1px;
+			border-color: #276749;
+			border-radius: 1px;
+			height: 205px;
+		}
+
+		.atencion2 {
+			color: #204778;
+			background-color: #bee3f8;
+			border-width: 1px;
+			border-color: #3c6492;
+			border-radius: 1px;
+			height: 195px;
+		}
+
+
+.text-center {
+	border-radius: 25px;
+}
+#cur_data {
+	padding: 10px;
+	background-color:#ffffff;
+	border-radius: 25px;
+}
+
+.bt_close {
+	width:100%;
+	text-align: right;
+}
+
+#bt_res {
+	padding: 8px 20px 8px 20px;
+}
+
+.blo_main {
+	text-align:left;
+}
+.blo1, .blo2
+{
+    display:inline;
+}
+h2 	{	color:#000000;}
+
+#bl1 {
+	padding: 1em;
+}
+</style>
+
+<script>
+
+
+		var element = document.getElementById('phone');
+		var maskOptions = {
+			mask: '0000-0000'
+		};
+		var mask = IMask(element, maskOptions);
+
+
+		var validator1 = $("#formConfirm").validate({
+			rules: {
+				phone: { required: true, minlength: 9 },
+				email: { required:false, email:true},
+				depto: { required: true },
+				muni: { required: true },
+				canton: { required: true },
+				colonia: { required: true },
+				calle: { required: true },
+				casa: { required: true, maxlength: 10 },
+				confirm: { required: true }
+			},
+			messages: {
+				phone: "Por favor escriba su Teléfono",
+				email: "Por favor escriba un correo electronico valido",
+				depto: "Por favor seleccione un Departamento",
+				muni: "Por favor seleccione un Municipio",
+				canton: "Por favor seleccione un Canton",
+				calle: "Por escriba una Calle/Avenida",
+				casa: "Por favor escriba No. Casa/Apartamento",
+				confirm: "&nbsp; Debe aceptar terminos y condiciones para continuar"
+
+			}
+		});
+
+
+		$("#bt_res").click(function () {
+			<!-- minsal_ui_cargar_vista('3btn') -->
+			<!-- var formConfirm = $("#formConfirm").serialize(); -->
+			if ($("#formConfirm").valid() == true) {
+				$("#show-div").show();
+
+				var comorbilidades = [];
+				var discapacidades = [];
+				$.each($("input[name='comorbilidades']:checked"), function(){
+					comorbilidades.push($(this).val());
+				});
+
+				$.each($("input[name='discapacidades']:checked"), function(){
+					discapacidades.push($(this).val());
+				});
+
+				console.log("comorbilidades:"+comorbilidades);
+				console.log("discapacidades:"+discapacidades);
+
+
+				var obj = JSON.parse(getCookie("p_data"));
+				var dui = obj['dui'];
+				var fecha_nacimiento = obj['fecha_nacimiento'];
+
+				datos = {
+					"datos": {
+						"telefono": $("#phone").val(),
+						"correo": $("#email").val(),
+						"id_departamento": $("#depto").val(),
+						"id_municipio": $("#muni").val(),
+						"id_canton": $("#canton").val(),
+						"id_colonia": $("#colonia").val(),
+						"calle": $("#calle").val(),
+						"casa": $("#casa").val(),
+					}
+				};
+
+				url = api_url + 'cita/confirmar/' + dui + '/' + fecha_nacimiento;
+				console.log(url);
+				$('#contenedorprincipal').load('3btn.html');
+
+				
+				$.ajax({
+					url: url,
+					data: JSON.stringify(datos),
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Accept': 'application/json',
+						'Authorization': getCookie('token')
+					},
+					success: function (msg) {
+						var p_data = msg['datos'];
+						var jdata = JSON.stringify(p_data);
+						setCookie("p_cita", jdata, 1);
+						minsal_ui_cargar_vista('3btn')
+					}
+				});
+				
+
+			
+			}
+		});
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+	function clean(obj) {
+	  for (var propName in obj) {
+		if (obj[propName] === null || obj[propName] === undefined) {
+			obj[propName]="";
+		}
+	  }
+	  return obj
+	}		
+
+	function muniCantonCur(muni) {
+		$('#canton').html("");
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'cantones/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'][0];
+					v_id = selectValues['id'];
+					v_nombre = selectValues['nombre_min'];
+
+					$('#canton')
+						.append($("<option></option>")
+							.attr("value", v_id)
+							.text(v_nombre));
+				}
+
+			}
+		});
+	}
+
+	function muniColoniaCur(colonia) {
+		$('#colonia').html("");
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'colonias/' + colonia,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					v_id = selectValues['id'];
+					v_nombre = selectValues['nombre_min'];
+
+					$('#colonia')
+						.append($("<option></option>")
+							.attr("value", v_id)
+							.text(v_nombre));
+				}
+
+			}
+		});
+
+	}
+
+	function getDeptos() {
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'departamentos',
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+						v_id = value.id;
+						v_nombre = value.nombre;
+						$('#depto')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+					});
+
+				}
+
+			}
+		});
+	}
+	function getMunis(depto) {
+
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'municipios',
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+						if (value.id_departamento == depto) {
+							v_id = value.id;
+							v_nombre = value.nombre;
+							$('#muni')
+								.append($("<option></option>")
+									.attr("value", v_id)
+									.text(v_nombre));
+
+						}
+					});
+
+				}
+
+			}
+		});
+	}
+
+	function getCantones(muni) {
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'cantones/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+
+						v_id = value.id;
+						v_nombre = value.nombre_min;
+
+						$('#canton')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+
+
+					});
+
+				}
+
+			}
+		});
+	}
+
+	function getColonias(muni) {
+
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'colonias/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+
+						v_id = value.id;
+						v_nombre = value.nombre_min;
+
+						$('#colonia')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+
+
+					});
+
+				}
+
+			}
+		});
+	}
+
+	function defaultData() {
+		var obj = clean(JSON.parse(getCookie("p_data")));
+		var i_depto = obj['id_departamento_domicilio'];
+		var n_depto = obj['municipio']['departamento']['nombre'];
+		var i_muni = obj['id_municipio_domicilio'];
+		var n_muni = obj['municipio']['nombre'];
+
+		var i_colonia = obj['id_colonia_domicilio'];
+
+
+		$('#depto').append($("<option></option>").attr("value", i_depto).text(n_depto));
+		$('#muni').append($("<option></option>").attr("value", i_muni).text(n_muni));
+
+
+		if (obj['id_canton_domicilio'] == null) {
+			muniCantonCur(i_muni);
+		}
+		muniColoniaCur(i_colonia);
+
+		getDeptos();
+		getMunis(i_depto);
+		getCantones(i_muni);
+		getColonias(i_muni);
+
+	}
+	
+	function getData() {
+	
+		var obj = clean(JSON.parse(getCookie("p_data")));
+		var nombre = toTitleCase(obj['primer_nombre'] + " " + obj['primer_apellido']);
+		var nombre_completo = toTitleCase( obj['primer_nombre']	+ " " + obj['segundo_nombre'] + " " + obj['tercer_nombre']	+ " " + obj['primer_apellido']	+ " " + obj['segundo_apellido']	+ " " + obj['apellido_casada']);
+		var dui = obj['dui'];
+		var departamento = obj['municipio']['departamento']['nombre'];
+		var municipio = obj['municipio']['nombre'];
+		var edad = calcularEdad(obj['fecha_nacimiento']);
+		var fecha_nacimiento = obj['fecha_nacimiento'];
+		var foto = obj['foto']['img_url'];
+		
+		<!-- $("#beneficiario").html(nombre); -->
+		$("#nombre_completo").html(nombre_completo);
+		$("#dui").html(dui);
+		<!-- $("#departamento").html(departamento); -->
+		<!-- $("#municipio").html(municipio); -->
+		$("#edad").html(edad);
+		$("#fecha_nacimiento").html(fecha_nacimiento);
+		$("#foto").attr("src", foto);
+	}
+
+		$("#depto").change(function () {
+			$('#muni').html("");
+			getMunis(this.value);
+		});
+
+		$("#muni").change(function () {
+			$('#canton').html("");
+			$('#colonia').html("");
+			getCantones(this.value);
+			getColonias(this.value);
+		});
+
+
+		$("#bt_datos").click(function () {
+		});
+
+
+		$(document).ready(function () {
+			$("#show-div").hide();
+			defaultData();
+			getData();
+		});
+		
+		$("#bt_out").click(function () {
+			minsal_ui_cargar_vista('apertura_cierre')
+		});			
+
+    function getComorbilidades(){
+        var cmrbs = "";
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/comorbilidades',
+			success: function (data) {
+                var selectValues = data['datos'];
+                //console.log(selectValues);
+                $.each(selectValues, function (key, value) {
+                    cmrbs+= '<div class="">'+
+                                '<label class="form-label">'+
+                                    '<input type = "checkbox" name = "comorbilidades"  value ="'+value.id+'">'+ '&nbsp;' +value.nombre+'</br>'+
+                                '</label>';
+                            '</div>'
+				});
+                $('#showCmrb').html(cmrbs);
+			}
+		});
+    }
+
+    function getDiscapacidades(){
+        var discs = "";
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/discapacidades',
+			success: function (data) {
+                var selectValues = data['datos'];
+                $.each(selectValues, function (key, value) {
+                    discs+= '<div class="">'+
+                                '<label class="form-label">'+
+                                    '<input type = "checkbox" name = "discapacidades" class="" value ="'+value.id+'">'+ '&nbsp;' +value.nombre+'</br>'+
+                                '</label>';
+                            '</div>'
+				});
+                $('#showDisc').html(discs);
+			}
+		});
+    }
+
+        $('#cmrb').on('change',function(){
+            var val = $(this).val();
+            if(val == 2){
+                getComorbilidades();
+                $('#lstCmrb').show('slow');
+            }else{
+                $('#lstCmrb').hide();
+            }
+        });
+
+        $('#disc').on('change',function(){
+            var val = $(this).val();
+            if(val == 2){
+                getDiscapacidades();
+                $('#lstDisc').show('slow');
+            }else{
+                $('#lstDisc').hide();
+            }
+        });
+
+
+$("#bt_close").click(function () {
+	destCookie();
+	minsal_ui_cargar_vista('login')
+});
+	
+</script>
+
+<div class="contenido">
+
+	<h1 style="text-align:center;padding:5px;">ACTUALIZACIÓN DE DATOS DEL CIUDADANO</h1>
+
+		<div class="container-fluid">
+			<!-- Control the column width, and how they should appear on different devices -->
+			<div class="row bg-white round-div">
+				<div class="col-sm-4" >
+					<div id="icon_div">
+						<img id="foto" onerror="this.src='images/image.png'" src="images/image.png" />
+					</div>
+				</div>
+				
+				<div class="col-sm-6">
+					<div><br></div>
+					<div class="blo_main">
+						<div class="blo1"></div>
+						<b><div id="nombre_completo" class="blo2"> ### </div></b>
+					</div>
+					<div class="blo_main">
+						<div class="blo1">Doc: </div>
+						<div id="dui" class="blo2"> ### </div>
+					</div>
+					<div class="blo_main">
+						<div class="blo1"> Edad: </div>
+						<div id="edad" class="blo2"> ### </div>
+					</div>
+					<div class="blo_main">
+						<div class="blo1">Nac: </div>
+						<div id="fecha_nacimiento" class="blo2"> ### </div>
+					</div>
+				</div>
+			</div>
+	</div>
+
+	<div class="text_i"><br></div>
+
+			<form id="formConfirm" method="put" action="" novalidate="novalidate">
+				<div id="bl1" class="bg-white round-div">
+					<div>
+						<div class="mb-2">
+							<p class="mb-1" style="text-align:center;"><b>INFORMACIÓN PERSONAL</b></p>
+							<hr>
+							<p class="mb-1">Indicaciones: Por favor, ingrese la información solicitada. Antes de
+								enviarla, revise que no haya errores.
+								Su información será manejada con total discreción</p>
+							<hr><br>
+
+							<div class="container-fluid">
+								<div class="row">
+									<div class="col-sm-6">
+										<label for="phone" class="form-label">Teléfono *</label>
+										<input type="text" name="phone" id="phone" placeholder="####-####"
+											required="required" class="form-input">
+									</div>
+									<div class="col-sm-6">
+										<label for="email" class="form-label">Correo electronico</label>
+										<input id="email" name="email" type="text" placeholder="" required=""
+											class="form-input">
+									</div>
+								</div>
+							</div>
+
+							<br>
+							<p class="mb-1"><b>Dirección Actual</b></p>
+							<hr>
+							<div class="container-fluid">
+								<div class="row">
+									<div class="text_label col-sm-6">
+										<label for="depto" class="form-label">Departamento *</label>
+										<!-- <input type="text" name="depto" id="depto" placeholder="" 	required="required" class="form-input"> -->
+										<select class="form-control" id="depto"></select>
+									</div>
+									<div class="text_label col-sm-6">
+										<label for="muni" class="form-label">Municipio *</label>
+										<!-- <input id="muni" name="muni" type="text" placeholder=""		required="required" class="form-input"> -->
+										<select class="form-control" id="muni"></select>
+									</div>
+								</div>
+							</div>
+
+							<div class="container-fluid">
+								<div class="row">
+									<div class="text_label col-sm-6">
+										<label for="canton" class="form-label">Cantón *</label>
+										<!-- <input type="text" name="canton" id="canton" 	placeholder="" required="required" class="form-input"> -->
+										<select class="form-control" id="canton"></select>
+									</div>
+									<div class="text_label col-sm-6">
+										<label for="colonia" class="form-label">Colonia/Caserío *</label>
+										<!-- <input id="colonia" name="colonia" type="text" placeholder=""	required="required" class="form-input"> -->
+										<select class="form-control" id="colonia">
+											<option value="1">Colonia</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="container-fluid">
+								<div class="row">
+									<div class="text_label col-sm-6">
+										<label for="calle" class="form-label">Calle/ avenida *</label>
+										<input type="text" name="calle" id="calle" placeholder="" required="required"
+											class="form-input" maxlength="100" size="100">
+									</div>
+									<div class="text_label col-sm-6">
+										<label for="casa" class="form-label">No. casa / apartamento *</label>
+										<input id="casa" name="casa" type="text" placeholder="" required="required"
+											class="form-input" maxlength="10" size="10">
+									</div>
+								</div>
+							</div>
+
+							
+							<div class="container-fluid">
+								<div class="row">
+									<div class="text_label col-sm-6">
+										<div class="form-group">
+											<label for="cmrb" class="form-label">¿Tiene comorbilidades?</label>
+											<select name="cmrb" id="cmrb" class="form-control">
+												<option value="1">No</option>
+												<option value="2">Sí</option>
+											</select>
+											<div id="lstCmrb" style="display: none;">
+												<div id="showCmrb" class="mt-4">
+													
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="text_label col-sm-6">
+										<div class="form-group">
+											<label for="disc" class="form-label">¿Tiene discapacidades?</label>
+											<select name="disc" id="disc" class="form-control">
+												<option value="1">No</option>
+												<option value="2">Sí</option>
+											</select>
+											<div id="lstDisc" style="display: none;">
+												<div id="showDisc" class="mt-4">
+													
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+
+
+						</div>
+
+					<div class="text_r text-xs text-gray-700">* Campos requeridos</div>
+					</div>
+
+					<div>
+						<div>
+							<div class="p-4 shadow bg-white">
+								<p class="mb-1"><b>Terminos y condiciones</b></p>
+								<hr>
+								<div class="text_term">
+									Por este medio declaro:
+									Que se me ha explicado y he comprendido que, actualmente, la vacuna contra COVID-19 es la única alternativa disponible para la prevención de la enfermedad del COVID-19. También que, a pesar de haber sido vacunado, debo seguir las medidas básicas de prevención, tales como el lavado constante de manos; el uso de alcohol gel y de mascarilla; la desinfección de ropa y calzado, así como el distanciamiento social, pues son indispensables para evitar más contagios.
+									En caso de ser mujer, manifiesto no estar embarazada, ni dando de mamar. Y que se me aclaró, antes de vacunarme, que no es conveniente embarazarse en el plazo de dos meses después de la segunda dosis.
+									He comprendido que la aplicación de la vacuna contra COVID-19 se realiza para intentar detener la propagación del COVID-19 en el país, y que  la misma puede provocar efectos secundarios tales como: dolor de cabeza, fiebre, dolor en sitio donde se aplique la vacuna, náuseas, dolor en las articulaciones, dolor en los músculos, fatiga, resfriado y, de manera no muy frecuente, inflamación de los ganglios. Asimismo, declaro no tener fiebre, ni haber presentado reacciones alérgicas severas, así como reacciones adversas severas o shock anafiláctico a otras vacunas previo a la vacunación contra COVID-19.
+									Además, doy fe de que he podido realizar (previo a que me vacunaran contra COVID-19) todas las preguntas sobre la vacuna, efectos y consecuencias, entre otros aspectos, y que estas preguntas han sido aclaradas. Asimismo, afirmo que he comprendido los beneficios de las dosis necesarias, así como los riesgos de la vacuna.
+									Por tanto, de conformidad con el Art. 15 de la Ley de Derechos y Deberes de los Pacientes y Prestadores de Servicios de Salud, en el libre ejercicio de los derechos que la Constitución de la República de El Salvador y las leyes me otorgan, de manera libre y voluntaria, SOLICITO al personal del Ministerio de Salud de El Salvador que me apliquen la vacuna para la prevención del COVID-19. Y permito que la información de inmunización sea ingresada en el sistema de información establecido por el Ministerio de Salud de El Salvador.
+								</div>
+								<br>
+								<div class="text_conf">
+									<input type="checkbox" class="" id="confirm" name="confirm" value="1"> 
+									Confirmo haber leído y acepto los anteriores términos y 
+									condiciones. Además, confirmo que he decidido, de manera voluntaria 
+									como ciudadano con mayoría de edad y en pleno ejercicio de mis 
+									facultades, vacunarme contra el COVID-19 en el periodo para el cual 
+									he sido seleccionado.
+								</div>
+
+							</div>
+								<div id="imp_term">
+									<h2 class="font-bold mb-4 md:mb-8 text-center md:text-left leading-tight"><br>
+									IMPORTANTE: Si desea realizar cambios en la información de este formulario, tendrá una sola oportunidad para hacerlo.
+									<br><br>
+									</h2>
+								</div>
+						</div>
+					</div>
+			</form>
+		</div>
+
+		<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8" style="display: none;">MSG</div>
+		<br>
+		<div class="text-center"><button id="bt_res" type="button" class="btn btn-primary">ENVIAR</button></div>
+		<div><br></div>
+		<div><br></div>
+
+	</div>
+
+		<div><br></div>
+		<div><br></div>
+		<div><br></div>
+		<div><br></div>

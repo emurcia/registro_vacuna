@@ -1,0 +1,492 @@
+<style>
+	#paso-vacunas .p-2,
+	#paso-datos .p-2 {
+		text-align: center;
+		display: block;
+		margin-right: auto;
+		margin-left: auto;
+	}
+</style>
+<script>
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+
+	function show(lotes) {
+		$('#id_vacuna_lote').html('').append($("<option></option>"));
+
+		$.each(lotes, function (key, value) {
+			v_id = value.id;
+			v_nombre = value.vacuna.marca;
+
+			$('#id_vacuna_lote')
+				.append($("<option></option>")
+					.attr("value", v_id)
+					.text(v_nombre));
+
+		});
+
+
+	}
+
+	function cargarLotesDisponibles() {
+		minsal_get('lotes/disponibles',
+			(msg) => {
+				if (msg['datos'].length) {
+					show(msg['datos']);
+				} else {
+					$('#id_vacuna_lote').html('No hay vacunas en el registro');
+				}
+
+			}
+		);
+	}
+
+	function cargarInsumos(contenedor) {
+		minsal_get('insumos',
+			(data) => {
+				var insumos = data['datos'];
+				$.each(insumos, function (key, value) {
+					var tipo = value.id_tipo == 1 ? 'descartables' : 'equipos';
+					$('#' + contenedor + ' #insumos-' + tipo).append(
+						'<input class="insumo-lista" name="insumo[' + value.id + ']" id="insumo-' + value.id + '" value="' + value.id + '" type="checkbox"> <label for="insumo-' + value.id + '" class="text-white">' + value.nombre + '</label><br>'
+					);
+				});
+			}
+		);
+	}
+
+	function iniciarVacunacion() {
+		var corte = {};
+		// Obtener dato de vacuna
+		corte.vacunas = {};
+		corte.vacunas[0] = {};
+		corte.vacunas[0].id_vacuna_lote = $('#contenido-apertura #id_vacuna_lote').val();
+		corte.vacunas[0].cantidad = $('#contenido-apertura #cantidad').val();
+
+		// Obtener dato de insumos
+		corte.insumos = [];
+		$('#contenido-apertura .insumo-lista:checked').each(function () {
+			corte.insumos.push(parseInt($(this).val()));
+		});
+
+		// Obtener dato de establecimiento
+		corte.establecimiento = {};
+		corte.establecimiento.apertura_cantidad_personal = $('#contenido-apertura #apertura_cantidad_personal').val();
+		corte.establecimiento.apertura_cantidad_personal_faltante = $('#contenido-apertura #apertura_cantidad_personal_faltante').val();
+		corte.establecimiento.apertura_incidencias = $('#contenido-apertura #apertura_incidencias').val();
+
+		console.log(corte);
+
+		minsal_put(
+			'establecimiento/apertura'
+			, (data) => {
+				if (data['resultado'] === 'OK') {
+					minsal_modal('Control de establecimiento', 'Establecimiento abierto exitosamente');
+					window.location.hash = '';
+					ui_token();
+				} else {
+					alert('Hubo un problema con la apertura');
+				}
+			}
+			, (jqXHR, status, err) => { alert('Hubo un problema con la apertura'); }
+			, corte
+		);
+
+	}
+
+	function terminarVacunacion() {
+		var corte = {};
+		// Obtener dato de vacuna
+		corte.vacunas = {};
+
+		$("#tabla-cierre-vacunas tbody").map(function (id) {
+			corte.vacunas[id] = {};
+			corte.vacunas[id].id_vacuna_lote = $("input", this).attr('data-id');
+			corte.vacunas[id].cantidad = $("input", this).val()
+		});
+
+		// Obtener dato de insumos
+		corte.insumos = [];
+		$('#contenido-cierre .insumo-lista:checked').each(function () {
+			corte.insumos.push(parseInt($(this).val()));
+		});
+
+		// Obtener dato de establecimiento
+		corte.establecimiento = {};
+		corte.establecimiento.cierre_consentimientos_informados = $('#cierre_consentimientos_informados').val();
+		corte.establecimiento.cierre_incidencias = $('#cierre_incidencias').val();
+
+		minsal_put(
+			'establecimiento/cierre'
+			, (data) => {
+				if (data['resultado'] === 'OK') {
+					minsal_modal('Control de establecimiento', 'Establecimiento cerrado exitosamente');
+					window.location.hash = '';
+					ui_token();
+				} else {
+					alert('Hubo un problema con el cierre');
+				}
+
+			}
+			, (jqXHR, status, err) => { alert('Hubo un problema con el cierre'); }
+			, corte
+		);
+
+	}
+
+	function modo_apertura() {
+		$(".contenido-apertura-cierre").hide();
+		$("#contenido-apertura").show();
+		$('#id_vacuna_lote').select2({
+			theme: 'bootstrap',
+			placeholder: "Vacuna",
+			width: 'resolve'
+		});
+		cargarLotesDisponibles();
+		cargarInsumos('contenido-apertura');
+
+		$('#contenido-apertura #btn-paso-vacunas').click(function () {
+			if (!$('#id_vacuna_lote').select2('data').length) {
+				minsal_modal('La apertura no puede realizarse', 'No hay vacunas asociadas a su establecimiento en el registro.<br>Intente la apertura del establecimiento mas tarde.');
+			} else {
+				$('#contenido-apertura #paso-vacunas').attr("style", "display: none !important");
+				$('#contenido-apertura #paso-insumos').fadeIn();
+			}
+		});
+
+		$('#contenido-apertura #btn-paso-insumos').click(function () {
+			$('#contenido-apertura #paso-insumos').attr("style", "display: none !important");
+			$('#contenido-apertura #paso-datos').fadeIn();
+		});
+
+		$('#contenido-apertura #btn-paso-insumos-atras').click(function () {
+			$('#contenido-apertura #paso-insumos').attr("style", "display: none !important");
+			$('#contenido-apertura #paso-vacunas').fadeIn();
+		});
+
+		$('#contenido-apertura #btn-paso-datos-atras').click(function () {
+			$('#contenido-apertura #paso-datos').attr("style", "display: none !important");
+			$('#contenido-apertura #paso-insumos').fadeIn();
+		});
+
+		$('#contenido-apertura #btn-paso-datos').click(function () {
+			iniciarVacunacion();
+		});
+	}
+
+	function modo_cierre() {
+		$(".contenido-apertura-cierre").hide();
+		$("#contenido-cierre").show();
+		cargarInsumos('contenido-cierre');
+		minsal_get(
+			'lotes/abiertos'
+			, (data) => {
+				console.log(data);
+
+				$('#tabla-cierre-vacunas tbody').html('');
+				$.each(data.datos, function (key, value) {
+					let row_data = '<tr><td>' + value.lote.vacuna.marca + '</td><td><input data-id="' + value.lote.id + '" type="text" placeholder="cantidad utilizada" />';
+					$('#tabla-cierre-vacunas tbody').append(row_data);
+				});
+
+			}
+			, () => { alert('No se pudieron obtener las vacunas abiertas') }
+		)
+
+		$('#contenido-cierre #btn-paso-vacunas').click(function () {
+			$('#contenido-cierre #paso-vacunas').attr("style", "display: none !important");
+			$('#contenido-cierre #paso-insumos').fadeIn();
+		});
+
+		$('#contenido-cierre #btn-paso-insumos').click(function () {
+			$('#contenido-cierre #paso-insumos').attr("style", "display: none !important");
+			$('#contenido-cierre #paso-datos').fadeIn();
+		});
+
+		$('#contenido-cierre #btn-paso-insumos-atras').click(function () {
+			$('#contenido-cierre #paso-insumos').attr("style", "display: none !important");
+			$('#contenido-cierre #paso-vacunas').fadeIn();
+		});
+
+		$('#contenido-cierre #btn-paso-datos-atras').click(function () {
+			$('#contenido-cierre #paso-datos').attr("style", "display: none !important");
+			$('#contenido-cierre #paso-insumos').fadeIn();
+		});
+
+		$('#contenido-cierre #btn-paso-datos').click(function () {
+			terminarVacunacion();
+		});
+	}
+
+	if (g_establecimiento_abierto) {
+		modo_cierre();
+	} else {
+		modo_apertura();
+	}
+	$("#bt_close").click(function () {
+		destCookie();
+		setCookie("cambio", "", -1);
+		//minsal_ui_cargar_vista('login')
+	});
+
+	function loadChangePassword() {
+		$('#pass').modal('show')
+	}
+	$('#bt_save').click(function () {
+		var password = $('#password').val();
+
+		$('#password_err').empty();
+
+		if (password == '') {
+			$('#password_err').html("<span class='text-danger'>La contraseña es requerida</span>");
+			$('#password').focus();
+			return false;
+		}
+		var obj = JSON.parse(getCookie("edata"));
+		var id_usuario = obj['id_usuario'];
+
+		event.preventDefault();
+
+		datos = {
+			"id_usuario": id_usuario,
+			"password": password
+		}
+
+		url = api_url + 'usuario/password';
+
+		$.ajax({
+			url: url,
+			data: JSON.stringify(datos),
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json',
+				'Authorization': getCookie('token')
+			},
+			success: function (data) {
+				var datos = data['datos'];
+				//console.log(datos.usuario);
+				var hash = CryptoJS.MD5(datos.usuario.toLowerCase() + ":" + password).toString();
+				$('#pass').modal('hide');
+
+				setCookie("token", hash, 1);
+
+				var obj = JSON.parse(getCookie("cambio"));
+				obj['cambio'] = 1;
+				var cp = JSON.stringify(obj);
+				setCookie("cambio", cp, 1);
+			},
+			error: function (jqXHR, status, err) {
+				$('#msg').html(err).show();
+			},
+		});
+	});
+
+	$(document).ready(function () {
+
+		var cp = JSON.parse(getCookie("cambio"));
+		var cambio = cp['cambio'];
+
+		if (cambio == 0) {
+			loadChangePassword();
+		}
+	});
+
+</script>
+
+<div class="contenido contenido-apertura-cierre" id="contenido-apertura" style="display: none;">
+	<h1 class="text-center mb-2 md:mb-4 leading-tight">Apertura de establecimiento</h1>
+
+	<!-- Datos lote -->
+	<div id="paso-vacunas" class="d-flex flex-column align-items-xl-center">
+		<div class="p-2">
+			<h2>1. Información de vacunas</h2>
+		</div>
+		<div class="p-2">
+			<select name="id_vacuna_lote" id="id_vacuna_lote" required="required" class="form-control"
+				style="width: 250px;">
+				<option>Cargando...</option>
+			</select>
+		</div>
+		<div class="p-2">
+			<input type="text" class="form-control" id="cantidad" required="required" placeholder="Cantidad frascos"
+				style="width: 250px;">
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-vacunas" type="button" class="btn btn-primary">Registrar vacuna</button>&nbsp;
+		</div>
+	</div>
+
+	<!-- Insumos -->
+	<div id="paso-insumos" class="d-flex flex-column align-items-xl-center" style="display: none !important;">
+		<div class="p-2">
+			<h2>2. Información de insumos</h2>
+		</div>
+
+		<div class="p-2 justify-content-start" style="width:100%;">
+			<h3>2.a Descartables e insumos</h3>
+			<div id="insumos-descartables"></div>
+		</div>
+		<div class="p-2 justify-content-start" style="width:100%;">
+			<h3>2.b Equipos e instrumentos</h3>
+			<div id="insumos-equipos"></div>
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-insumos-atras" type="button" class="btn btn-secondary">Atrás</button>
+			<button id="btn-paso-insumos" type="button" class="btn btn-primary">Siguiente</button>
+		</div>
+	</div>
+
+	<!-- Datos iniciales -->
+	<div id="paso-datos" class="d-flex flex-column align-items-xl-center" style="display: none !important;">
+		<div class="p-2">
+			<h2>3.a Personal</h2>
+		</div>
+		<div class="p-2">
+			<input type="text" class="form-control" id="apertura_cantidad_personal" required="required"
+				placeholder="Cantidad de personal" style="width: 250px;">
+		</div>
+		<div class="p-2">
+			<input type="text" class="form-control" id="apertura_cantidad_personal_faltante" required="required"
+				placeholder="Cantidad de personal faltante" style="width: 250px;">
+		</div>
+		<div class="p-2">
+			<h2>3.b Establecimiento</h2>
+		</div>
+		<div class="p-2">
+			<textarea class="form-control" rows="4" cols="50" id="apertura_incidencias"
+				placeholder="Incidencias al inicio del dia"></textarea>
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-datos-atras" type="button" class="btn btn-secondary">Atrás</button>
+			<button id="btn-paso-datos" type="button" class="btn btn-primary">Iniciar Vacunación</button>
+		</div>
+	</div>
+</div> <!-- contenido -->
+
+<div class="contenido contenido-apertura-cierre" id="contenido-cierre" style="display: none;">
+	<h1 class="text-center mb-2 md:mb-4 leading-tight">Cierre de establecimiento</h1>
+
+	<!-- Datos lote -->
+	<div id="paso-vacunas" class="d-flex flex-column align-items-xl-center">
+		<div class="p-2">
+			<h2>1. Información de vacunas</h2>
+		</div>
+		<div class="p-2">
+			<table id="tabla-cierre-vacunas" class="table bg-white table-bordered">
+				<thead>
+					<tr>
+						<th>Vacuna</th>
+						<th>Cantidad utilizada</th>
+					</tr>
+				<tbody>
+				</tbody>
+				</thead>
+			</table>
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-vacunas" type="button" class="btn btn-primary">Siguiente</button>&nbsp;
+		</div>
+	</div>
+
+	<!-- Insumos -->
+	<div id="paso-insumos" class="d-flex flex-column align-items-xl-center" style="display: none !important;">
+		<div class="p-2">
+			<h2>2. Información de insumos</h2>
+		</div>
+
+		<div class="p-2 justify-content-start" style="width:100%;">
+			<h3>2.a Descartables e insumos</h3>
+			<div id="insumos-descartables"></div>
+		</div>
+		<div class="p-2 justify-content-start" style="width:100%;">
+			<h3>2.b Equipos e instrumentos</h3>
+			<div id="insumos-equipos"></div>
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-insumos-atras" type="button" class="btn btn-secondary">Atrás</button>
+			<button id="btn-paso-insumos" type="button" class="btn btn-primary">Siguiente</button>
+		</div>
+	</div>
+
+	<!-- Datos cierre -->
+	<div id="paso-datos" class="d-flex flex-column align-items-xl-center" style="display: none !important;">
+		<div class="p-2">
+			<h2>3.a Pacientes</h2>
+		</div>
+		<div class="p-2">
+			<input type="text" class="form-control" id="cierre_consentimientos_informados" required="required"
+				placeholder="Consentimientos informados" style="width: 250px;">
+		</div>
+		<div class="p-2">
+			<h2>3.b Establecimiento</h2>
+		</div>
+		<div class="p-2">
+			<textarea class="form-control" rows="4" cols="50" id="cierre_incidencias"
+				placeholder="Incidencias al cierre del dia"></textarea>
+		</div>
+		<div class="p-2">
+			<button id="btn-paso-datos-atras" type="button" class="btn btn-secondary">Atrás</button>
+			<button id="btn-paso-datos" type="button" class="btn btn-primary">Cerrar Establecimiento</button>
+		</div>
+	</div>
+
+
+
+</div> <!-- contenido -->
+<div class="modal" id="pass" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Cambio de contraseña</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>Estimado usuario, por favor actualice su contraseña</p><br>
+				<input type="password" class="form-input" id="password" placeholder="Nueva contraseña">
+				<div id="password_err"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary btn-sm" id="bt_save">Guardar</button>
+				<button type="button" class="btn btn-danger btn-sm" id="bt_cancel" data-dismiss="modal">Cerrar</button>
+			</div>
+		</div>
+	</div>
+</div>

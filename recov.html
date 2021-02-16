@@ -1,0 +1,77 @@
+<style>
+</style>
+
+<script>
+
+var validator3 = $("#formConfirm").validate({
+	rules: {
+		email: { required: true, email:true }
+	},
+	messages: {
+		email: "Por favor escriba su Correo"
+	}
+});
+
+function emailChange() {
+	if ($("#formConfirm").valid() == true) {
+		console.log('EMAIL CHANGE');
+	}
+}
+
+$("#bt_send").click(function () {
+	emailChange();
+});
+
+
+$(document).on("keydown", ":input:not(textarea)", function (event) {
+	if (event.key == "Enter") {
+		event.preventDefault();
+		$("#bt_send").click();
+	}
+});
+
+$("#bt_login").click(function () {
+	event.preventDefault();
+	minsal_ui_cargar_vista('login')
+});
+
+$(document).ready(function () {
+	$("#user").focus();
+});
+	
+</script>
+
+<div id="contenedor" class="contenido"><br>
+
+	<div id="div_ini" class="container-fluid">
+
+		<h1 class="text-center mb-2 md:mb-4 leading-tight">RECUPERAR CONTRASEÑA</h1>
+
+		<form id="formConfirm" method="get" action="" novalidate="novalidate">
+			<div>
+				<div id="bl1" class="p-4 shadow bg-white">
+				<div class="text_i">
+				Complete este formulario con su dirección de correo electrónico.
+				<div class="space"></div>
+				Si la dirección ingresada se encuentra en nuestros registros, le enviaremos un correo con las instrucciones para restablecer su contraseña
+				<div class="space2"></div>
+				</div>
+					<div class="form-group">
+						<label class="form-label col-sm-12" for="email">CORREO ELECTRÓNICO :</label>
+						<div class="col-sm-12">
+							<input type="text" class="form-input" id="email" name="email" placeholder="Correo Electronico" required="required">
+						</div>
+					</div>
+
+					<div class="text-center">
+						<button id="bt_send" type="button" class="btn btn-primary btn-xl .bg-blue-500">SOLICITAR</button>
+					</div>
+					
+					<p class="mt-8 text-center text-sm"><a id="bt_login" href="" class="link-basic text-blue-500">Iniciar sesión</a></p>
+				</div>
+			</div>
+		</form>
+
+	</div>
+
+</div>

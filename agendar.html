@@ -1,0 +1,571 @@
+<style>
+<<<<<<< HEAD
+	@media screen and (min-width: 300px) {
+		.contenido 				{ margin: auto; width: 99%; border: 0px solid white; padding: 10px; height: 500px; }
+	}
+
+	@media screen and (min-width: 400px) {
+		.contenido 			{ margin: auto; width: 99%; border: 0px solid white; padding: 10px; height: 500px; }
+	}
+
+	@media screen and (min-width: 500px) {
+		.contenido 			{ margin: auto;	width: 99%;	border: 0px solid white; padding: 10px;	height: 500px; }
+	}
+
+	@media screen and (min-width: 700px) {
+		.contenido 			{ margin: auto; width: 95%; border: 0px solid white; padding: 10px; height: 500px; }
+	}
+
+	@media screen and (min-width: 1000px) {
+		.contenido 			{ margin: auto; width: 1000px; border: 0px solid white; padding: 10px; height: 500px; }
+	}
+
+	@media screen and (min-width: 1200px) {
+		.contenido 			{ margin: auto; width: 1000px; border: 0px solid white; padding: 10px; height: 500px; }
+	}
+
+
+=======
+>>>>>>> f3eaee4a134cc99362662d74b069d54a46cda5e6
+#b12			{ margin: auto; width: 100%; border: 0px solid white; padding: 10px; height: 500px; overflow-x: auto;} 
+.res-table		{ margin: auto; width: 95%; border: 0px solid white; padding: 10px; height: 500px; overflow-x: auto;} 
+
+.select2 {
+	width: auto !important;
+}
+</style>
+<script>
+
+	var dateMask = IMask(
+	document.getElementById('txtFecha'),
+	{
+		mask: Date,
+		min: new Date(1990, 0, 1),
+		lazy: false
+	});
+	var contador = 0;
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+	function cl(obj) {
+		if (obj === null || obj === undefined) {
+			obj = "";
+		}
+		return obj
+	}
+
+
+	function toggle_prop(id) {
+		var g = document.getElementById(id);
+		if (g.disabled == false ) {
+			g.disabled = true;
+		}else {
+			g.disabled = false;
+		}
+	}	
+	
+
+	function toggle_show(id) {
+		var e = document.getElementById(id);
+		
+		if(e.style.display == 'none') {
+			e.style.display = 'block';
+			}
+		else {
+			e.style.display = 'none';
+			}
+	}	
+
+	function mostrarbl2(){
+		$('#bl2').fadeIn(1200);
+		$("html, body").animate({ scrollTop: $(document).height() }, 1000);//scrollea hasta el final de la pagina
+	}
+
+
+	$(document).on("keydown", ":input:not(textarea)", function (event) {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			$("#bt_main").click();
+		}
+	});
+
+	$("#bt_close").click(function () {
+		destCookie();
+		minsal_ui_cargar_vista('login')
+	});
+
+	/*function cargarVacunar(){
+		minsal_ui_cargar_vista('registro_vacuna')
+	}*/
+	function eliminar(){
+		minsal_ui_cargar_vista('registro_vacuna')
+	}
+
+	function actualizarAsistencia(fila,id_cita){
+		
+		datos = {
+			"id_cita" : id_cita 
+		};
+
+			url = api_url + 'actualizar/asistencia';
+		$.ajax({
+			url: url,
+			data: JSON.stringify(datos),
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json',
+			},
+			success: function (data) {
+				if(data['resultado'] == "OK"){
+					var objeto = $('#'+fila);
+					var table = $('#main-table').DataTable();
+					table.row(objeto.parents('tr')).remove().draw();
+					//$('#main-table tbody #'+fila).remove();
+				}else{
+					$('#msg').html("No se encontró a la persona").show();
+				}
+			},
+			error: function (jqXHR, status, err) {
+				$('#msg').html(err).show();
+			},
+		});
+		
+	}
+
+	function getCitas(fecha,uca){
+		
+		var miTabla = $('#main-table').DataTable();
+		miTabla.clear().draw();
+		
+		var establecimiento    = JSON.parse(getCookie("edata"));
+		var id_establecimiento = establecimiento['id_establecimiento'];
+		var id_distribucion    = $('#horas').val();
+		var estado 			   = $('#estado').val();
+		var asistencia		   = $('#asistencia').val();
+		
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			data:{
+				fecha_inicio: fecha,
+				id_establecimiento: id_establecimiento,
+				id_distribucion: id_distribucion ,
+				ultima_cita_activa: true,
+				vacunados: estado,
+				asistencia: asistencia
+			},
+			url: api_url + 'obtener/citas',
+			success: function (datos) {
+				//console.log(datos);
+				if(datos['resultado'] == "ERROR"){
+					$('#main-table tbody').empty().html('<center><h3>No se encontró resultados.</h3></center>');
+					alert('No hay datos');
+					return false;
+				}
+				var selectValues = datos['datos'];
+				var rows = "";
+				$.each(selectValues, function (key, value) {
+
+					if( value.asistencia == 0 ){
+						var rowNode = miTabla.row.add([
+						'<p style = "text-align:center" id="'+contador+'">' +  value.hora_cita +'</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.primer_nombre + '&nbsp;'+ value.segundo_nombre +'&nbsp;'+ value.primer_apellido+'&nbsp;'+value.segundo_apellido +'</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.dui + '</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.dosis+'&nbsp;'+'dosis' + '</p>',
+						'<p style = "text-align:center" >' +  
+							'<center>'+
+								'<a id="'+contador+'" onclick="cargarVacunar('+value.id_persona+',&#39;'+value.dui+'&#39;,&#39;'+value.fecha_nacimiento+'&#39;,'+value.id_cita+')" class="btn bg-white text-primary btn-sm">'+
+									'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>'+
+								'</a>'+
+								'<a id="'+contador+'" onclick="eliminar()" class="btn bg-white text-danger btn-sm">'+
+									'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>'+
+								'</a>'+
+								'<a id="'+contador+'" onclick="actualizarAsistencia('+contador+','+value.id_cita+')" class="btn bg-white text-success btn-sm">'+
+									'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 6H6V5H4V8H20V5H18V6H16V5H8V6ZM20 10H4V20H20V10ZM16 3H8V2H6V3H4C2.89543 3 2 3.89543 2 5V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V5C22 3.89543 21.1046 3 20 3H18V2H16V3ZM7 14V12H9V14H7ZM11 14H13V12H11V14ZM15 14V12H17V14H15ZM7 16V18H9V16H7ZM13 18H11V16H13V18Z"></path></svg>'+
+								'</a>'+
+							'</center>'+
+						'</p>',
+						
+						]).draw()
+						.node();
+					}else{
+						var rowNode = miTabla.row.add([
+						'<p style = "text-align:center" id="'+contador+'">' +  value.hora_cita +'</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.primer_nombre + '&nbsp;'+ value.segundo_nombre +'&nbsp;'+ value.primer_apellido+'&nbsp;'+value.segundo_apellido +'</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.dui + '</p>',
+						'<p style = "text-align:center" id="'+contador+'">' +  value.dosis+'&nbsp;'+'dosis' + '</p>',
+						'<p style = "text-align:center" >' +  
+							'<center>'+
+								'<a id="'+contador+'" onclick="cargarVacunar('+value.id_persona+',&#39;'+value.dui+'&#39;,&#39;'+value.fecha_nacimiento+'&#39;,'+value.id_cita+')" class="btn bg-white text-primary btn-sm">'+
+									'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>'+
+								'</a>'+
+								'<a id="'+contador+'" onclick="eliminar()" class="btn bg-white text-danger btn-sm">'+
+									'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>'+
+								'</a>'+
+							'</center>'+
+						'</p>',
+						]).draw()
+						.node();
+					}
+					
+					/*if(value.asistencia == 0){
+						rows += '<tr id = "'+contador+'">'+
+                                '<td>' + value.hora_cita + '</td>'+
+                                '<td>' + value.primer_nombre + '&nbsp;'+ value.segundo_nombre +'&nbsp;'+ value.primer_apellido+'&nbsp;'+value.segundo_apellido+'</td>'+
+								'<td><center>' + value.dui +'</center></td>'+
+								'<td><center>' + value.dosis+'&nbsp;'+'dosis'+'</center></td>'+
+								'<td>'+
+									'<a id="vc" onclick="cargarVacunar('+value.id_persona+',&#39;'+value.dui+'&#39;,&#39;'+value.fecha_nacimiento+'&#39;,'+value.id_cita+')" class="btn bg-white text-primary btn-sm">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>'+
+									'</a>'+
+									'<a id="el" onclick="eliminar()" class="btn bg-white text-danger btn-sm">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>'+
+									'</a>'+
+									'<a id="el" onclick="actualizarAsistencia('+contador+','+value.id_cita+')" class="btn bg-white text-success btn-sm">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 6H6V5H4V8H20V5H18V6H16V5H8V6ZM20 10H4V20H20V10ZM16 3H8V2H6V3H4C2.89543 3 2 3.89543 2 5V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V5C22 3.89543 21.1046 3 20 3H18V2H16V3ZM7 14V12H9V14H7ZM11 14H13V12H11V14ZM15 14V12H17V14H15ZM7 16V18H9V16H7ZM13 18H11V16H13V18Z"></path></svg>'+
+									'</a>'+
+								'</td>'+
+                            '</tr>';
+					}else{
+						rows += '<tr id = "'+contador+'">'+
+                                '<td>' + value.hora_cita + '</td>'+
+                                '<td>' + value.primer_nombre + '&nbsp;'+ value.segundo_nombre +'&nbsp;'+ value.primer_apellido+'&nbsp;'+value.segundo_apellido+'</td>'+
+								'<td><center>' + value.dui +'</center></td>'+
+								'<td><center>' + value.dosis+'&nbsp;'+'dosis'+'</center></td>'+
+								'<td>'+
+									'<a id="vc" onclick="cargarVacunar('+value.id_persona+',&#39;'+value.dui+'&#39;,&#39;'+value.fecha_nacimiento+'&#39;,'+value.id_cita+')" class="btn bg-white text-primary btn-sm">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>'+
+									'</a>'+
+									'<a id="el" onclick="eliminar()" class="btn bg-white text-danger btn-sm">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>'+
+									'</a>'+
+								'</td>'+
+                            '</tr>';
+					}*/
+					
+				contador++;
+				});
+
+				/*if(contador == 0){
+            		$('#main-table tbody').empty().html('<center><h3>No se encontró resultados.</h3></center>');
+        		}else{
+            		$('#main-table tbody').empty().html(rows);
+				}*/
+			}
+		});
+	}
+	
+	function getHoras(fecha){
+		
+		var establecimiento = JSON.parse(getCookie("edata"));
+		var id_establecimiento = establecimiento['id_establecimiento'];
+		
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			data:{
+				id_establecimiento:id_establecimiento,
+				fecha: fecha
+			},
+			url: api_url + 'distribucion/horas',
+			success: function (datos) {
+				//console.log(datos);
+				var selectValues = datos['datos'];
+				$.each(selectValues, function (key, value) {
+					v_id = value.id_cupo;
+					v_hora = value.hora_cupo;
+					$('#horas')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_hora));
+				});
+			}
+		});
+	}
+  
+	function formatDate(fecha) {
+		var d = fecha.split("/");
+		var dia = d[0];
+		var mes = d[1];
+		var anio = d[2];
+		if (mes.length < 2) mes = '0' + mes;
+		if (dia.length < 2) dia = '0' + dia; 
+		return  anio +'-'+mes+'-'+dia;
+	}
+
+	$("#bt_buscar").click(function () {
+		var txtFecha 		= $('#txtFecha').val();
+		var id_distribucion = $('#horas').val();
+		
+		var fecha = formatDate(txtFecha);
+		getCitas(fecha,true);
+	
+		event.preventDefault();
+	});
+
+	$('#txtFecha').change(function(){
+		var txtFecha 		= $('#txtFecha').val();
+		var fecha = formatDate(txtFecha);
+		//alert(fecha);
+		$('#horas').html("");
+		$('#horas').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+		getHoras(fecha);
+	});
+
+	function cargarVacunar(idPersona,dui,fechaNac,idCita){
+		setCookie("p_agenda", idPersona, 1);
+		setCookie("p_agenda_dui", dui, 1);
+		setCookie("p_agenda_fecha_nac", fechaNac, 1);
+		setCookie("id_confirmado", idCita, 1);
+		//console.log('idPersona: '+idPersona+', dui: '+dui+', fechaNac: '+fechaNac);
+		minsal_ui_cargar_vista('registro_vacuna')
+	}
+
+	$(document).ready(function(){
+
+		var date = new Date().toLocaleDateString();
+		$('#txtFecha').val(date);
+		$('#txtFecha').datepicker({
+						dateFormat: 'dd/mm/yy',
+						dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+						monthNames: [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ],
+
+					});
+		
+		var txtFecha = $('#txtFecha').val();
+		var fecha = formatDate(txtFecha);
+		getHoras(fecha);
+		var  miTabla = $('#main-table').DataTable({
+			searching: false,
+			scrollCollapse:false,
+			ordering:false,
+			autoWidth: true,
+			responsive: true,
+			lengthMenu:false,
+			language: {
+				lengthMenu: "Mostrar _MENU_ registros",
+				zeroRecords: "No se encontraron resultados",
+				emptyTable: "Ningún dato disponible en esta tabla",
+				info: "Mostrando _END_ de _TOTAL_ registro(s)",
+				infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+				infoFiltered: "(filtrado de un total de _MAX_ registros)",
+				infoPostFix: "",
+				loadingRecords: "Cargando...",
+				paginate: {
+					first: "Primero",
+					last: "Último",
+					next: "Siguiente",
+					previous: "Anterior"
+				},
+			}
+		});
+		
+		getCitas(fecha,true);
+		
+		$('#horas').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+		});
+		$('#asistencia').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+		});
+		   
+		$('#estado').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+		});
+	});
+
+	$("#bt_close").click(function () {
+		destCookie();
+		minsal_ui_cargar_vista('login')
+	});	
+
+</script>
+
+<div class="contenido">
+
+	<div id="other" class="">
+		<h1 class="text-center mb-2 md:mb-4 leading-tight">LISTA DE AGENDADOS</h1>
+		<div class="text_i">
+		</div>
+
+		<form id="formGeneral1" method="get" action="" novalidate="novalidate" autocomplete="off">
+			<br>
+			<div id="bl1">
+				<div class="container-fluid">
+					<table id="agenda" style="width:100%" border=1>
+						<tr>
+							<th></th>
+							<th></th>
+					  	</tr>
+					  	<tr>
+							<td>
+								<div class="shadow bg-white round-div">
+									<div class="row p-2">	
+										<div class="col-md-3">
+											<div class="form-group">
+												<label for="dob" class="form-label">Fecha</label>
+												<input id="txtFecha" name="dob" type="text" class="form-control">		
+											</div>
+											
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label for= "horas" class="form-label">Hora</label>
+												<select name = "horas" id = "horas" class="form-control">	
+													<option value="">-Seleccione-</option>
+												</select>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label for = "estado" class = "form-label">Asistencia</label>
+												<select name = "asistencia" id = "asistencia" class="form-control">	
+													<option value="">-Todos-</option>
+													<option value = "false">Sin confirmar</option>
+													<option value = "true">Confirmado</option>									
+												</select>	
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label for = "estado" class = "form-label">Estado</label>
+												<select name = "estado" id = "estado" class="form-control">
+													<option value = "true">Vacunados</option>	
+													<option value = "false" selected>Sin vacunar</option>				
+												</select>	
+											</div>
+										</div>								
+									</div>
+									<div class="row mt-2">
+										<div class="col-sm-6 offset-3 mb-3">
+											<button id="bt_buscar" type="button" class="btn btn-primary btn-block" >Buscar</button>
+										</div>
+									</div>
+								</div>
+							
+							</td>
+							<td style="padding-left:20px;">
+								<div class="shadow bg-white round-div" >
+									<div class="row p-2">
+										<div class="col-md-12" >
+											<div>
+												<div class="text-center">
+													<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline-block w-12 h-12"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 7H6V2H18V7H20C21.1046 7 22 7.89543 22 9V17C22 18.1046 21.1046 19 20 19H18V22H6V19H4C2.89543 19 2 18.1046 2 17V9C2 7.89543 2.89543 7 4 7ZM16 7H8V4H16V7ZM20 9V17H18V15H6V17H4V9H20ZM16 17H8V20H16V17ZM19 11C19 10.4477 18.5523 10 18 10C17.4477 10 17 10.4477 17 11C17 11.5523 17.4477 12 18 12C18.5523 12 19 11.5523 19 11Z"></path></svg>
+												</div>
+												<p class="text-center">Imprmir reporte</p>
+												<br>
+											</div>
+										</div>
+									</div>
+									<!--<div class="row">
+										<div class="col-sm-6 mb-3">
+											<div style="max-width: 100%;max-height:100%;" ></div>
+										</div>
+									</div>-->
+								</div>
+							</td>
+					  	</tr>
+					</table>
+				</div>
+			</div>
+			<br>
+			
+			<div id="bl2" class="bg-white round-div">
+				<div class="res-table">
+					<div class="col-sm-12">
+						<h1 class="text-center mt-3 mb-3" style="color: #000;"><b>Resultados</b></h1>
+						<hr class="my-1 mb-4">
+					</div>
+
+					<table class="table mt-4" id="main-table" style="width: 100%;">
+						<thead class="">
+							<tr>
+								<th>Hora</th>
+								<th width=''>Nombre</th>
+							    <th width=''><center>Documento</center></th>
+								<th width=''><center>Dosis</center></th>
+								<th width=''><center>Acciones</center></th>
+							</tr>
+						</thead>
+						<tbody id="rows">
+		
+						</tbody>
+					</table>
+				</div>
+			</div>
+	</div>
+
+
+			<input id="tdoc" name="tdoc" type="hidden" value="1">
+
+		</form>
+	</div>
+	
+
+	<div class="space"><br></div>
+	
+	<div class="text-center"></div>
+	
+	<div><br></div>
+
+	<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8" style="display: none;">MSG</div>
+	<div id="fotos" style=""></div>
+</div>
+
+
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>

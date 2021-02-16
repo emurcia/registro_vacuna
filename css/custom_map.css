@@ -1,0 +1,278 @@
+
+
+@font-face {
+    font-family: 'RobotoLight'; /*a name to be used later*/
+    src: url('fonts/Roboto-Light.ttf'); /*URL to font*/
+}
+@font-face {
+    font-family: 'BebasBold'; /*a name to be used later*/
+    src: url('fonts/BebasNeue Bold.ttf'); /*URL to font*/
+}
+@font-face {
+    font-family: 'BebasLight'; /*a name to be used later*/
+    src: url('fonts/BebasNeue Light.ttf'); /*URL to font*/
+}
+@font-face {
+    font-family: 'BebasBook'; /*a name to be used later*/
+    src: url('fonts/BebasNeue Book.ttf'); /*URL to font*/
+}
+
+#map {
+		background: #fff;
+		height: 600px !important;
+		width: 100%	!important;
+		margin: 0;
+		padding: 0 !important;
+		border-style: solid;
+		border-width: 1px;
+}
+
+h3 {
+         margin: 0 0 5px 0;
+         border-bottom: 1px solid #444;
+		 font-size: medium;
+}
+.shadow {
+         box-shadow: 0 0 5px #888;
+}
+#feedback {
+	background: #fff;
+	color: #444;
+	position: absolute !important;
+	font-family: arial;
+	width: 165px;
+	height: 250px;
+	// left: 70px;
+	margin-left: 75px;
+	margin-top: 5px;
+	padding: 0px;
+	z-index: 40;
+}
+
+#leyenda {
+    background: #cccccc;
+	color: #444;
+	position: absolute;
+	font-family: arial;
+	font-size: 100%;		 
+	margin-left: 5px;
+	margin-top: 5px;
+	border: 1px solid #bfbfbf;
+	z-index: 40;
+	text-align:center;
+	padding:3px 4px;
+	width:79.219px;
+	height:22px;
+
+
+
+
+}	
+#leyenda a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}  
+
+#info {
+	margin-left:10px;
+}  
+	  
+#note,
+#hint {
+         font-size: 80%;
+}
+#note {
+         font-weight: 700;
+         //padding: 0 0 10px 0;
+}
+	  
+#layerList {
+         width: 125px;
+		 margin-left:0px;
+}
+.dojoDndItemOver {
+         background: #ccc;
+}
+	
+.demographicInfoContent {
+      padding-top: 10px;
+}
+	
+body {
+	font: 100%/1.4 Verdana, Arial, Helvetica, sans-serif;
+	// background: #42413C;
+	margin: 0;
+	padding: 0;
+	color: #000;
+}
+
+.container {
+	padding:0px;
+	margin: auto;
+	width:100% !important;
+}
+
+.mapa_marco {
+	// width: auto; 
+	height: 580px;
+	margin: 0px;
+}
+	
+.dojoDndItem {
+		padding: 0px;
+}	
+
+	table {
+    font-size: small;
+}
+
+
+.right-element {
+	width:355px;
+    display: inline-block;
+    position: relative;
+    right: -30px;
+}	
+.left-element {
+	// width:355px;
+    display: inline-block;
+    position: relative;
+    left: -30px;
+}
+#symbology {	  
+    background: transparent;
+	color: #ffffff !important;
+	position: absolute;
+	font-family: arial;
+	font-size: 100%;		 
+	margin-left: 15px;
+	margin-top: 370px;
+	z-index: 40;
+	padding:0px; 	
+	// width: 146px; 
+	height: 128px;
+}	
+.formTable {
+	BORDER: #fff 0px solid;
+}
+
+#compass {
+	color: #444;
+	position: absolute;
+	font-family: arial;
+	font-size: small;			  
+	margin-left:175px;
+	padding: 0px;
+	top: 485px;
+	z-index: 40;	
+
+}
+.esriPopupMaximized {
+	left: 25px !important;
+	margin-top: 25px !important;
+}
+.headerblock {
+	z-index:1;
+	position:relative;
+	// height: 60px;
+	width:100% !important;
+	margin-top:0px;
+	margin-bottom:0px;
+	// margin-left:-14px;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0);
+    // border: 2px solid rgba(0,0,0,0);
+	// border-radius: 10px 10px 10px 10px;	
+	text-align:center;
+	font-family: BebasBook;
+	font-size: 35px;
+	// font-weight: 700;
+	color: #000000;
+    background-color: #c0c3c2 !important;
+}
+
+.my_content {
+	height:539px !important;
+	text-align:center;
+	margin-top:5px;
+	margin-bottom:5px;
+	margin-left: 5px;
+	margin-right:5px
+	}
+	
+.my_label {
+	border-collapse:separate !important; 
+	border-spacing:2px !important; 
+    background-color: #485668; !important;
+	color:#fff;
+	text-align:center;
+	margin-top:2px;
+	margin-bottom:2px;
+	margin-left: 5px;
+	margin-right:5px
+	}
+	
+.center {
+    margin: auto;
+    width: 100% !important;
+    padding: 0px;
+}
+a {
+    color: rgb(204, 10, 26);
+    text-decoration: none;
+}
+.contentPane {
+	max-height: 300px !important;
+	padding-top: 5px !important;
+}
+.row {
+	margin-right: 0px;
+	margin-left: 0px;
+}
+.color {
+	color:black;
+	width:160px;
+	height:25px;
+	font-size: 12px;
+    text-align: center;
+	display: table-cell; 
+	vertical-align: middle;
+}
+.sep {
+	width:140px;
+	height:1px;
+}
+.ficha {
+  margin-left: 5px;
+}
+.esriPopup .pointer, .esriPopup .outerPointer {
+    background: rgba(87,188,196,.9);
+}
+/* change size of pop up*/
+.esriPopup .sizer {
+    position: relative;
+    width: 165px !important;
+	font-size: 10px !important;
+    z-index: 1;
+}
+.esriPopupMaximized {
+	left: 25px !important;
+	margin-top: 25px !important;
+}
+.esriSimpleSlider {
+	z-index: 30;
+	top: 35px !important;
+}
+#HomeButton {
+	position: absolute;
+	// top: 200px;
+	// left: 20px;
+	margin-left: 20px;
+	margin-top: -475px;
+	z-index: 50;
+}
+div.esriPopupWrapper .zoomTo {
+  display: none;
+}
+.esriPopup .titleButton.maximize, .titleButton.next, .titleButton.prev, .spinner {
+  display: none;
+}

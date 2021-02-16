@@ -1,0 +1,133 @@
+<style>
+::-webkit-input-placeholder {
+   text-align: center;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+   text-align: center;  
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+   text-align: center;  
+}
+
+:-ms-input-placeholder {  
+   text-align: center; 
+}
+</style>
+
+<script>
+
+var validator2 = $("#formConfirm").validate({
+	rules: {
+		user: { required: true },
+		pass: { required: true }
+	},
+	messages: {
+		user: "Por favor escriba su Usuario",
+		pass: "Por favor escriba su Contraseña"
+	}
+});
+
+function loginUser() {
+		$('#msg').hide();
+		if ($("#formConfirm").valid() == true) {
+			var user = $("#user").val();
+			var pass = $("#pass").val();
+			var hash = CryptoJS.MD5(user.toLowerCase() + ":" + pass).toString();
+			datos = {
+				"datos": {
+				}
+			};
+			url = api_url + 'autenticar';
+			$.ajax({
+				url: url,
+				data: JSON.stringify(datos),
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'Authorization': hash
+				},
+				success: function (msg) {
+					setCookie("token", hash, 1);
+					var es = JSON.stringify(msg['datos']);
+					setCookie("edata", es, 1);
+					var obj = JSON.parse(getCookie("edata"));
+					
+					var cambio = obj['cambio_password'];
+					var cp = JSON.stringify({ "cambio":cambio });
+					setCookie("cambio", cp , 1);
+					
+					ui_token();
+				},
+				error: function (jqXHR, status, err) {
+					$('#msg').html("Usuario o contraseña Incorrectos").show();
+				},
+
+			});
+
+		}
+}
+
+$("#bt_send").click(function () {
+	event.preventDefault();
+	loginUser();
+});
+
+
+$(document).on("keydown", ":input:not(textarea)", function (event) {
+	if (event.key == "Enter") {
+		event.preventDefault();
+		$("#bt_send").click();
+	}
+});
+
+$("#bt_recov").click(function () {
+	minsal_ui_cargar_vista('recov')
+});
+
+$(document).ready(function () {
+	<!-- $("#user").focus(); -->
+});
+	
+</script>
+
+<div id="contenedor" class="contenido"><br>
+
+	<div id="div_ini" class="container-fluid">
+
+		<h3 class="text-center mb-2 md:mb-4 leading-tight">INICIAR SESIÓN</h3>
+		<!--<div class="text_i"></div>-->
+
+		<form id="formConfirm" method="get" action="" novalidate="novalidate">
+			<div>
+				<div id="bl1">
+					<div class="form-group">
+						<!--<label class="form-label col-sm-2" for="user">Usuario:</label>-->
+						<div class="col-sm-12">
+							<input type="text" class="form-input" id="user" name="user" placeholder="USUARIO" required="required">
+						</div>
+					</div>
+
+					<div class="form-group">
+						<!--<label class="form-label col-sm-2" for="pass">Contraseña:</label>-->
+						<div class="col-sm-12">
+							<input type="password" class="form-input" id="pass" name="pass" placeholder="CONTRASEÑA" required="required">
+						</div>
+					</div>
+
+					<div class="text-center">
+						<button id="bt_send" type="button" class="btn btn-light">ENTRAR</button>
+					</div>
+					
+					<!--<p class="mt-8 text-center text-sm"><a id="bt_recov" href="#" class="link-basic">¿Olvidó su contraseña?</a></p>-->
+				</div>
+			</div>
+		</form>
+		<br>
+		<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8" style="display: none;">MSG</div>
+
+	</div>
+
+</div>

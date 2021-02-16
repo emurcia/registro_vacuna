@@ -1,0 +1,337 @@
+<style>
+</style>
+
+<script>
+	var contador = 0;
+	var validator1 = $("#formGeneral1").validate({
+		rules: {
+			super_buscar: { required: true }
+		},
+		messages: {
+			super_buscar: "Por favor escriba DUI o nombre de la persona"
+		}
+	});
+
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+	function cl(obj) {
+		if (obj === null || obj === undefined) {
+			obj = "";
+		}
+		return obj
+	}
+
+
+	function toggle_prop(id) {
+		var g = document.getElementById(id);
+		if (g.disabled == false) {
+			g.disabled = true;
+		} else {
+			g.disabled = false;
+		}
+	}
+
+	function toggle_show(id) {
+		var e = document.getElementById(id);
+
+		if (e.style.display == 'none') {
+			e.style.display = 'block';
+		}
+		else {
+			e.style.display = 'none';
+		}
+	}
+
+	$(document).on("keydown", ":input:not(textarea)", function (event) {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			$("#bt_main").click();
+		}
+	});
+
+	$("#bt_close").click(function () {
+		destCookie();
+		minsal_ui_cargar_vista('login')
+	});
+
+	function cargarVacunar(idPersona, dui, fechaNac) {
+		setCookie("p_lista_espera", idPersona, 1);
+		setCookie("p_lista_espera_dui", dui, 1);
+		setCookie("p_lista_espera_fecha_nac", fechaNac, 1);
+		setCookie("id_confirmado", 0, 1);
+		//console.log('idPersona: '+idPersona+', dui: '+dui+', fechaNac: '+fechaNac);
+		minsal_ui_cargar_vista('registro_vacuna')
+	}
+
+	function agenda() {
+		console.log('carga');
+		//console.log('idPersona: '+idPersona+', dui: '+dui+', fechaNac: '+fechaNac);
+		minsal_ui_cargar_vista('add_cita');
+	}
+
+	/*function getListaEspera() {
+		minsal_get('lista_espera', (data) => {
+			if (data['resultado'] == "ERROR") {
+				$('#main-table tbody').empty().html('<center>No se encontraron resultados.</center>');
+				return false;
+			}
+			var selectValues = data['datos'];
+			var rows = '';
+			$.each(selectValues, function (key, value) {
+				rows += '<tr id = "' + contador + '">' +
+					'<td>' + value.primer_nombre + '&nbsp;' + value.segundo_nombre + '&nbsp;' + value.primer_apellido + '&nbsp;' + value.segundo_apellido + '</td>' +
+					'<td>' + value.documento + '</td>' +
+					'<td><center>' + value.edad + '</center></td>' +
+					'<td><center>' +
+					'<a id="vc" onclick="cargarVacunar(' + value.id_persona + ',&#39;' + value.documento + '&#39;,&#39;' + value.fecha_nacimiento + '&#39;)" class="btn bg-white text-primary btn-sm rounded">' +
+					'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>' +
+					'</a>' +
+					'<a class="btn bg-white btn-sm text-info rounded" >' +
+					'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 6H6V5H4V8H20V5H18V6H16V5H8V6ZM20 10H4V20H20V10ZM16 3H8V2H6V3H4C2.89543 3 2 3.89543 2 5V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V5C22 3.89543 21.1046 3 20 3H18V2H16V3ZM7 14V12H9V14H7ZM11 14H13V12H11V14ZM15 14V12H17V14H15ZM7 16V18H9V16H7ZM13 18H11V16H13V18Z"></path></svg>' +
+					'</a>' +
+					'<a id="el" onclick="eliminar(' + contador + ',' + value.id_persona + ',' + value.id_establecimiento + ')" class="btn bg-white btn-sm rounded text-danger">' +
+					'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>' +
+					'</a>' +
+					'</center></td>' +
+					'</tr>';
+				contador++;
+				});
+				
+		
+        		if(contador === 0){
+            		$('#main-table tbody').empty().html('<center><h3>No se encontró resultados.</h3></center>');
+        		}else{
+            	$('#main-table tbody').empty().html(rows);
+				}
+				
+			
+		});
+	}*/
+	
+	function eliminar(fila, persona, establecimiento) {
+		datos = {
+			"id_persona": persona,
+			"id_establecimiento_fisico": establecimiento
+		};
+
+		minsal_delete('lista_espera'
+			, (data) => {
+				if (data['resultado'] == "OK") {
+					var objeto = $('#'+fila);
+					var table = $('#main-table').DataTable();
+					table.row(objeto.parents('tr')).remove().draw();
+					//$('#main-table tbody #' + fila).remove();
+				} else {
+					$('#msg').html("No se encontró a la persona").show();
+				}
+			}
+			, (jqXHR, status, err) => { $('#msg').html(err).show(); }
+			, datos
+		);
+	}
+	/*function eliminar(fila, persona, establecimiento) {
+		datos = {
+				"id_persona" : persona,
+				"id_establecimiento_fisico" : establecimiento 
+			};
+
+		url = api_url + 'lista_espera';
+		$.ajax({
+			url: url,
+			data: JSON.stringify(datos),
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json',
+				'Authorization': getCookie('token')
+			},
+			success: function (data) {
+				if(data['resultado'] == "OK"){
+					var objeto = $('#'+fila);
+					var table = $('#main-table').DataTable();
+					table.row(objeto.parents('tr')).remove().draw();
+				}else{
+					$('#msg').html("No se encontró a la persona").show();
+				}
+				, (jqXHR, status, err) => { $('#msg').html(err).show(); }
+				, datos
+			}
+		});
+	}*/
+
+
+	$(document).ready(function(){
+
+		//getListaEspera();
+		var miTabla = $('#main-table').DataTable({
+			searching: false,
+			scrollCollapse:false,
+			ordering:false,
+			autoWidth: true,
+			responsive: true,
+			lengthMenu:false,
+			language: {
+				lengthMenu: "Mostrar _MENU_ registros",
+				zeroRecords: "No se encontraron resultados",
+				emptyTable: "Ningún dato disponible en esta tabla",
+				info: "Mostrando _END_ de _TOTAL_ registros",
+				infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+				infoFiltered: "(filtrado de un total de _MAX_ registros)",
+				infoPostFix: "",
+				loadingRecords: "Cargando...",
+				paginate: {
+					first: "Primero",
+					last: "Último",
+					next: "Siguiente",
+					previous: "Anterior"
+				},
+			}
+		});
+
+		url = api_url + 'lista_espera';
+		
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'Authorization': getCookie('token')
+			},
+			url: url,
+				success: function (data) {
+					console.log(data);
+					if(data['resultado'] == "ERROR"){
+						$('#main-table tbody').empty().html('<center><h3>No se encontró resultados.</h3></center>');
+						return false;
+					}
+					var selectValues = data['datos'];
+					var rows = '';
+					$.each(selectValues, function (key, value) {
+						var rowNode = miTabla.row.add([
+							'<p style = "text-align:center" id="'+contador+'">' + value.primer_nombre + '&nbsp;'+ value.segundo_nombre +'&nbsp;'+ value.primer_apellido+'&nbsp;'+value.segundo_apellido+'</p>',
+							'<p style = "text-align:center" id="'+contador+'">' + value.documento +'</p>',
+							'<p style = "text-align:center" id="'+contador+'">' + value.edad + '</p>',
+							'<p style = "text-align:center" >' +  
+								'<center>'+
+									'<a id="'+contador+'" onclick="cargarVacunar('+value.id_persona+',&#39;'+value.documento+'&#39;,&#39;'+value.fecha_nacimiento+'&#39;)" class="btn bg-white text-primary btn-sm rounded">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path d="M8.50001 20C8.37201 20 8.24401 19.951 8.14601 19.854L2.14601 13.854C1.95101 13.659 1.95101 13.342 2.14601 13.147C2.34101 12.952 2.65801 12.952 2.85301 13.147L8.85301 19.147C9.048 19.342 9.048 19.659 8.85301 19.854C8.75601 19.951 8.62801 20 8.50001 20V20Z"></path><path d="M16.5 5.99998C16.372 5.99998 16.244 5.95098 16.146 5.85398C15.951 5.65898 15.951 5.34198 16.146 5.14698L20.146 1.14698C20.341 0.951982 20.658 0.951982 20.853 1.14698C21.048 1.34198 21.048 1.65898 20.853 1.85398L16.853 5.85398C16.756 5.95098 16.628 5.99998 16.5 5.99998Z"></path><path d="M7.50001 19C7.37201 19 7.24401 18.951 7.14601 18.854C6.95101 18.659 6.95101 18.342 7.14601 18.147L16.732 8.56099C17.015 8.27799 17.171 7.90099 17.171 7.49999C17.171 7.09899 17.015 6.72299 16.732 6.43899L15.56 5.26699C14.994 4.70099 14.005 4.70099 13.439 5.26699L3.85301 14.853C3.65801 15.048 3.34101 15.048 3.14601 14.853C2.95101 14.658 2.95101 14.341 3.14601 14.146L12.732 4.55999C13.707 3.58499 15.293 3.58499 16.267 4.55999L17.439 5.73199C18.414 6.70699 18.414 8.29299 17.439 9.26699L7.85301 18.853C7.75601 18.951 7.62801 19 7.50001 19V19Z"></path><path d="M2.00001 20.5C1.87201 20.5 1.74401 20.451 1.64601 20.354C1.45101 20.159 1.45101 19.842 1.64601 19.647L5.14601 16.147C5.34101 15.952 5.65801 15.952 5.85301 16.147C6.04801 16.342 6.04801 16.659 5.85301 16.854L2.35301 20.354C2.25601 20.451 2.12801 20.5 2.00001 20.5V20.5Z"></path><path d="M3.50001 22C3.37201 22 3.24401 21.951 3.14601 21.854L0.146006 18.854C-0.0489941 18.659 -0.0489941 18.342 0.146006 18.147C0.341006 17.952 0.658006 17.952 0.853006 18.147L3.85301 21.147C4.04801 21.342 4.04801 21.659 3.85301 21.854C3.75601 21.951 3.62801 22 3.50001 22Z"></path><path d="M11.5 8.99999C11.372 8.99999 11.244 8.95099 11.146 8.85399L10.146 7.85399C9.95101 7.65899 9.95101 7.34198 10.146 7.14698C10.341 6.95198 10.658 6.95198 10.853 7.14698L11.853 8.14699C12.048 8.34199 12.048 8.65899 11.853 8.85399C11.756 8.95099 11.628 8.99999 11.5 8.99999V8.99999Z"></path><path d="M10.5 12C10.372 12 10.244 11.951 10.146 11.854L8.14601 9.85401C7.95101 9.65901 7.95101 9.34201 8.14601 9.14701C8.34101 8.95201 8.658 8.95201 8.853 9.14701L10.853 11.147C11.048 11.342 11.048 11.659 10.853 11.854C10.756 11.951 10.628 12 10.5 12V12Z"></path><path d="M7.50001 13C7.37201 13 7.24401 12.951 7.14601 12.854L6.14601 11.854C5.95101 11.659 5.95101 11.342 6.14601 11.147C6.34101 10.952 6.65801 10.952 6.85301 11.147L7.85301 12.147C8.04801 12.342 8.04801 12.659 7.85301 12.854C7.75601 12.951 7.62801 13 7.50001 13Z"></path><path d="M22 11C20.897 11 20 10.103 20 9.00001C20 8.08701 21.303 5.72002 21.564 5.25502C21.741 4.94002 22.259 4.94002 22.436 5.25502C22.697 5.72002 24 8.08701 24 9.00001C24 10.103 23.103 11 22 11ZM22 6.55602C21.464 7.59502 21 8.66001 21 9.00001C21 9.55101 21.449 10 22 10C22.551 10 23 9.55101 23 9.00001C23 8.66001 22.536 7.59502 22 6.55602Z"></path></svg>'+
+									'</a>'+
+									'<a id="'+contador+'" class="btn" onclick="agenda()" bg-white btn-sm text-info rounded" >'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 6H6V5H4V8H20V5H18V6H16V5H8V6ZM20 10H4V20H20V10ZM16 3H8V2H6V3H4C2.89543 3 2 3.89543 2 5V20C2 21.1046 2.89543 22 4 22H20C21.1046 22 22 21.1046 22 20V5C22 3.89543 21.1046 3 20 3H18V2H16V3ZM7 14V12H9V14H7ZM11 14H13V12H11V14ZM15 14V12H17V14H15ZM7 16V18H9V16H7ZM13 18H11V16H13V18Z"></path></svg>'+
+									'</a>'+
+									'<a id="'+contador+'" onclick="eliminar('+contador+','+value.id_persona+','+value.id_establecimiento+')" class="btn bg-white btn-sm rounded text-danger">'+
+										'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 1H15C16.1046 1 17 1.89543 17 3V4H20C21.1046 4 22 4.89543 22 6V8C22 9.10457 21.1046 10 20 10H19.9199L19 21C19 22.1046 18.1046 23 17 23H7C5.89543 23 5 22.1046 5.00345 21.083L4.07987 10H4C2.89543 10 2 9.10457 2 8V6C2 4.89543 2.89543 4 4 4H7V3C7 1.89543 7.89543 1 9 1ZM4 6H7H17H20V8H4V6ZM6.08649 10H17.9132L17.0035 20.917L17 21H7L6.08649 10ZM15 3V4H9V3H15ZM13.4142 15L15.7071 17.2929L14.2929 18.7071L12 16.4142L9.70711 18.7071L8.29289 17.2929L10.5858 15L8.29289 12.7071L9.70711 11.2929L12 13.5858L14.2929 11.2929L15.7071 12.7071L13.4142 15Z"></path></svg>'+
+									'</a>'+
+								'</center>'+
+							'</p>',
+							
+							]).draw()
+							.node();
+					contador++;
+					});
+				}
+			});
+		});
+</script>
+
+<div class="contenido">
+
+	<div id="other">
+		<h1 class="text-center mb-2 md:mb-4 leading-tight titulo">LISTA DE ESPERA DEL DÍA</h1>
+		<div class="text_i">
+		</div>
+
+		<div id="bl1" class="bg-white round-div">
+			<form id="formGeneral1" method="get" action="" novalidate="novalidate">
+				<div class="">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-sm-12 ">
+								<!--<div id="resultado"></div>-->
+								<table width='100%' class="table" id="main-table" data-page-length='3'>
+									<thead>
+										<tr>
+											<th width='40%'>Nombre</th>
+											<th width='15%'>Documento</th>
+											<th width='15%'>
+												<center>Edad</center>
+											</th>
+											<th width='30%'>
+												<center>Acciones</center>
+											</th>
+										</tr>
+									</thead>
+									<tbody id="rows">
+										<!--<tr>
+											<td>00107093-5</td>
+											<td>Juan Pérez Méndez Najarro</td>
+											<td><center>37</center></td>
+											<td><center><a id='vc' class="btn btn-primary btn-sm">Vacunar</a>&nbsp;&nbsp;<a id='el' class="btn btn-danger btn-sm">Eliminar</a></center></td>
+										</tr>-->
+									</tbody>
+
+								</table>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<input id="tdoc" name="tdoc" type="hidden" value="1">
+			</form>
+		</div>
+	</div>
+
+
+	<div class="space"><br></div>
+
+	<div class="text-center"></div>
+
+	<div><br></div>
+
+	<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8"
+		style="display: none;">MSG</div>
+	<div id="fotos" style=""></div>
+</div>
+
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>

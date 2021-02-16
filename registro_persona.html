@@ -1,0 +1,874 @@
+<style>
+
+    
+</style>
+
+<script>
+    
+    var element = document.getElementById('telefono');
+		var maskOptions = {
+			mask: '0000-0000'
+		};
+    var mask = IMask(element, maskOptions);
+    
+    var dateMask = IMask(
+	document.getElementById('fecha_nacimiento'),
+	{
+		mask: Date,
+		min: new Date(1990, 0, 1),
+		lazy: false
+    });
+    
+    function formatDate(fecha) {
+		var d = fecha.split("/");
+		var dia = d[0];
+		var mes = d[1];
+		var anio = d[2];
+		if (mes.length < 2) mes = '0' + mes;
+		if (dia.length < 2) dia = '0' + dia; 
+		return  anio +'-'+mes+'-'+dia;
+	}
+    
+    $('#bt_send').click(function () {
+        $("#msg").hide();
+        var comorbilidades = [];
+        var discapacidades = [];
+        $.each($("input[name='comorbilidades']:checked"), function(){
+            comorbilidades.push($(this).val());
+        });
+
+        $.each($("input[name='discapacidades']:checked"), function(){
+            discapacidades.push($(this).val());
+        });
+       
+        var establecimiento           = JSON.parse(getCookie("edata"));
+        var id_establecimiento        = establecimiento['id_establecimiento'];
+        var primer_nombre             = $('#primer_nombre').val();
+        var segundo_nombre            = $('#segundo_nombre').val();
+        var primer_apellido           = $('#primer_apellido').val();
+        var segundo_apellido          = $('#segundo_apellido').val();
+        var fecha_nac                 = $('#fecha_nacimiento').val();
+        var id_pais_nacimiento        = $('#id_pais_nacimiento').val();
+        var id_sexo                   = $('#id_sexo').val();
+        var id_profesion              = $('#id_profesion').val();
+        var telefono                  = $('#telefono').val();
+        var correo                    = $('#correo').val();
+        var id_pais_domicilio         = $('#id_pais_domicilio').val();
+        var id_departamento_domicilio = $('#id_departamento_domicilio').val();
+        var id_municipio_domicilio    = $('#id_municipio_domicilio').val();
+        var id_canton                 = $('#id_canton').val();
+        var id_colonia                = $('#id_colonia').val();
+        var calle_avenida             = $('#calle_avenida').val();
+        var casa_apartamento          = $('#casa_apartamento').val();
+        var id_nacionalidad           = $('#id_nacionalidad').val();
+        var id_area                   = $('#id_area').val();
+        var covid                     = $('#covid').val();
+        //console.log(fecha_nac);return false;
+        $('#primer_nombre_err').empty();
+        $('#primer_apellido_err').empty();
+        $('#fecha_nacimiento_err').empty();
+        $('#id_pais_nacimiento_err').empty();
+        $('#id_sexo_err').empty();
+        $('#telefono_err').empty();
+        $('#id_pais_domicilio_err').empty();
+        $('#id_departamento_domicilio_err').empty();
+        $('#id_municipio_domicilio_err').empty();
+        $('#id_nacionalidad_err').empty();
+        $('#id_area_err').empty();
+        $('#covid_err').empty();
+
+        if(primer_nombre == ''){
+            $('#primer_nombre_err').html("<span class='text-danger'>Primer nombre es requerido</span>");
+            $('#primer_nombre').focus();
+            return false;
+        }
+        if(primer_apellido == ''){
+            $('#primer_apellido_err').html("<span class='text-danger'>Primer apellido es requerido</span>");
+            $('#primer_apellido').focus();
+            return false;
+        }
+        if(fecha_nac == ''){
+            $('#fecha_nacimiento_err').html("<span class='text-danger'>Fecha de nacimiento es requerida</span>");
+            $('#fecha_nacimiento').focus();
+            return false;
+        }
+        if(id_pais_nacimiento == ''){
+            $('#id_pais_nacimiento_err').html("<span class='text-danger'>El país de nacimiento es requerido</span>");
+            $('#id_pais_nacimiento').focus();
+            return false;
+        }
+        if(id_sexo == ''){
+            $('#id_sexo_err').html("<span class='text-danger'>El sexo es requerido</span>");
+            $('#id_sexo').focus();
+            return false;
+        }
+        if(telefono == ''){
+            $('#telefono_err').html("<span class='text-danger'>El telefono es requerido</span>");
+            $('#telefono').focus();
+            return false;
+        }
+        if(id_pais_domicilio == ''){
+            $('#id_pais_domicilio_err').html("<span class='text-danger'>El país de domicilio es requerido</span>");
+            $('#id_pais_domicilio').focus();
+            return false;
+        }
+        if(id_departamento_domicilio == ''){
+            $('#id_departamento_domicilio_err').html("<span class='text-danger'>El departamento de domicilio es requerido</span>");
+            $('#id_departamento_domicilio').focus();
+            return false;
+        }
+        if(id_municipio_domicilio == ''){
+            $('#id_municipio_domicilio_err').html("<span class='text-danger'>El municipio de domicilio es requerido</span>");
+            $('#id_municipio_domicilio').focus();
+            return false;
+        }
+        if(id_nacionalidad == ''){
+            $('#id_nacionalidad_err').html("<span class='text-danger'>La nacionalidad es requerida</span>");
+            $('#id_nacionalidad').focus();
+            return false;
+        }
+        if(id_area == ''){
+            $('#id_area_err').html("<span class='text-danger'>El área geográfica es requerida</span>");
+            $('#id_area').focus();
+            return false;
+        }
+        if(covid == ''){
+            $('#covid_err').html("<span class='text-danger'>El campo covid es requerido</span>");
+            $('#covid').focus();
+            return false;
+        }
+        
+        var fecha_nacimiento = formatDate(fecha_nac);
+
+       // console.log(fecha_nacimiento);return false;
+        event.preventDefault();
+        datos = {
+                "id_establecimiento" : id_establecimiento,
+                "primer_nombre" : primer_nombre,
+                "segundo_nombre" : segundo_nombre,
+                "primer_apellido" : primer_apellido,
+                "segundo_apellido" : segundo_apellido,
+                "fecha_nacimiento" : fecha_nacimiento,
+                "id_pais_nacimiento" : id_pais_nacimiento,
+                "id_sexo" : id_sexo,
+                "id_profesion" : id_profesion,
+                "telefono" : telefono,
+                "correo" : correo,
+                "id_pais_domicilio" : id_pais_domicilio,
+                "id_departamento_domicilio" : id_departamento_domicilio,
+                "id_municipio_domicilio" : id_municipio_domicilio,
+                "id_canton" : id_canton,
+                "id_colonia" : id_colonia,
+                "calle_avenida" : calle_avenida,
+                "casa_apartamento" : casa_apartamento,
+                "id_nacionalidad" : id_nacionalidad,
+                "id_area" : id_area,
+                "covid" : covid,
+                "comorbilidades" : comorbilidades,
+                "discapacidades" : discapacidades,
+        };
+        //console.log(datos);return false;
+
+        url = api_url + 'guardar/persona';
+		$.ajax({
+			url: url,
+			data: JSON.stringify(datos),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': getCookie('token')
+			},
+			success: function (data) {
+                //console.log(data);
+				if(data['resultado'] == "ERROR"){
+                    $('#msg').html("Error en el ingreso de datos. Verique el formulario").show();
+				}else{
+                    var p_data = data['datos'];
+					var jdata = JSON.stringify(p_data);
+					setCookie("p_data", jdata, 1);
+					var obj = JSON.parse(getCookie("p_data"));
+					minsal_ui_cargar_vista('3btn')
+				}
+			},
+			error: function (jqXHR, status, err) {
+				$('#msg').html(err).show();
+			},
+		});
+        
+    });
+
+    function getPaises(){
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/paises',
+			success: function (data) {
+                var selectValues = data['datos'];
+              //  console.log(selectValues);
+                $.each(selectValues, function (key, value) {
+                    v_id = value.id;
+                    v_nombre = value.nombre;
+                    $('#id_pais_nacimiento')
+							.append($("<option></option>")
+								.attr("value", v_id)
+                                .text(v_nombre));
+
+                    $('#id_pais_domicilio')
+							.append($("<option></option>")
+								.attr("value", v_id)
+                                .text(v_nombre));
+
+                    $("#id_pais_nacimiento option[value=68]").attr('selected', 'selected');
+                    $("#id_pais_domicilio option[value=68]").attr('selected', 'selected'); 
+                   
+                });
+                $('#id_departamento_domicilio').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+                getDeptos( $('#id_pais_domicilio').val() );
+                
+			}
+		});
+    }
+
+    function getDeptos(idPais){
+        
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'departamentos/porPais/'+ idPais,
+			success: function (data) {
+                var selectValues = data['datos'];
+                //console.log(selectValues);
+                $.each(selectValues, function (key, value) {
+                    v_id = value.id;
+					v_nombre = value.nombre;
+					$('#id_departamento_domicilio')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+				});
+			}
+		});
+    }
+
+    function getMunis(depto) {
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'municipios',
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var selectValues = msg['datos'];
+                    var v_id = 0; var v_nombre = "";
+                    $.each(selectValues, function (key, value) {
+                        if (value.id_departamento == depto) {
+                            v_id = value.id;
+                            v_nombre = value.nombre;
+                            $('#id_municipio_domicilio')
+                                .append($("<option></option>")
+                                    .attr("value", v_id)
+                                    .text(v_nombre));
+                        }
+                    });
+                }
+            }
+        });
+    }
+   
+    function getColonias(muni) {
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'colonias/por/municipio/' + muni,
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var selectValues = msg['datos'];
+                    var v_id = 0; var v_nombre = "";
+                    $.each(selectValues, function (key, value) {
+
+                        v_id = value.id;
+                        v_nombre = value.nombre_min;
+
+                        $('#id_colonia')
+                            .append($("<option></option>")
+                                .attr("value", v_id)
+                                .text(v_nombre));
+                    });
+                }
+            }
+        });
+    }
+
+    function getCantones(muni) {
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'cantones/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+						v_id = value.id;
+						v_nombre = value.nombre_min;
+
+						$('#id_canton')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+					});
+				}
+
+			}
+		});
+	}
+
+    function getNacionalidad(){
+        $.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/nacionalidades',
+			success: function (data) {
+                var selectValues = data['datos'];
+                $.each(selectValues, function (key, value) {
+                    v_id = value.id;
+					v_nombre = value.nombre;
+                    $('#id_nacionalidad')
+							.append($("<option></option>")
+								.attr("value", v_id)
+                                .text(v_nombre));
+
+                    $("#id_nacionalidad option[value=67]").attr('selected', 'selected'); 
+                    
+				});
+			}
+		});
+    }
+
+    function getAreas(){
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/areas',
+			success: function (data) {
+                var selectValues = data['datos'];
+                $.each(selectValues, function (key, value) {
+                    v_id = value.id;
+					v_nombre = value.nombre;
+					$('#id_area')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+				});
+			}
+		});
+    }
+
+    function getSexos(){
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/sexo',
+			success: function (data) {
+                var selectValues = data['datos'];
+                $.each(selectValues, function (key, value) {
+                    v_id = value.id;
+					v_nombre = value.nombre;
+					$('#id_sexo')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+				});
+			}
+		});
+    }
+
+    function getComorbilidades(){
+        var cmrbs = "";
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/comorbilidades',
+			success: function (data) {
+                var selectValues = data['datos'];
+                //console.log(selectValues);
+                $.each(selectValues, function (key, value) {
+                    cmrbs+= '<div class="">'+
+                                '<label class="form-label">'+
+                                    '<input type = "checkbox" name = "comorbilidades"  value ="'+value.id+'">'+ '&nbsp;' +value.nombre+'</br>'+
+                                '</label>';
+                            '</div>'
+				});
+                $('#showCmrb').html(cmrbs);
+			}
+		});
+    }
+
+    function getDiscapacidades(){
+        var discs = "";
+		$.ajax({
+		    async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'obtener/discapacidades',
+			success: function (data) {
+                var selectValues = data['datos'];
+                $.each(selectValues, function (key, value) {
+                    discs+= '<div class="">'+
+                                '<label class="form-label">'+
+                                    '<input type = "checkbox" name = "discapacidades" class="" value ="'+value.id+'">'+ '&nbsp;' +value.nombre+'</br>'+
+                                '</label>';
+                            '</div>'
+				});
+                $('#showDisc').html(discs);
+			}
+		});
+    }
+
+    function defaultData(){
+        getPaises();
+        getNacionalidad();
+        getAreas();
+        getSexos();
+    }
+    
+    $("#id_pais_domicilio").change(function () {
+        $('#id_departamento_domicilio').html("");
+        $('#id_departamento_domicilio').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+		getDeptos(this.value);
+    });
+
+    $("#id_departamento_domicilio").change(function () {
+        $('#id_municipio_domicilio').html("");
+        $('#id_municipio_domicilio').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+		getMunis(this.value);
+    });
+
+    $("#id_municipio_domicilio").change(function () {
+        $('#id_colonia').html("");
+        $('#id_colonia').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+        $('#id_canton').html("");
+        $('#id_canton').append($("<option></option>").attr("value", '').text('-Seleccione-'));
+        getColonias(this.value);
+        getCantones(this.value);
+    });
+        
+    $(document).ready(function () {
+        $('#fecha_nacimiento').datepicker({
+                        dateFormat: 'dd/mm/yy',
+                        maxDate: "0",
+						dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
+						monthNames: [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ],
+					});
+        
+        $('#cmrb').on('change',function(){
+            var val = $(this).val();
+            if(val == 2){
+                getComorbilidades();
+                $('#lstCmrb').show('slow');
+            }else{
+                $('#lstCmrb').hide();
+            }
+        });
+
+        $('#disc').on('change',function(){
+            var val = $(this).val();
+            if(val == 2){
+                getDiscapacidades();
+                $('#lstDisc').show('slow');
+            }else{
+                $('#lstDisc').hide();
+            }
+        });
+
+        $('#profesion').autocomplete({
+            source:function(request,response){
+                $.ajax({
+                    url: api_url + 'obtener/ocupaciones/'+request.term,
+                    type:"GET",
+                    dataType:"json",            
+                    success:function(data){
+                        response($.map(data['datos'], function (item) {
+                            return {
+                                label: item.nombre,
+                                id: item.id
+                            }
+                        }))
+                    }
+                })
+            },
+            minLength: 3,
+            select:function(event,ui){
+                $('#profesion').val(ui.item.label);
+                $('#id_profesion').val(ui.item.id);
+            }
+        });
+        $('#id_pais_nacimiento').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_pais_domicilio').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_departamento_domicilio').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_municipio_domicilio').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_nacionalidad').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_colonia').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_canton').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_sexo').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#id_area').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#covid').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#disc').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+        });
+        $('#cmrb').select2({
+			containerCssClass: "",
+			theme: 'bootstrap',
+			//placeholder: "Seleccione vacuna y lote",
+		});
+        defaultData();
+
+    });
+
+    $("#bt_close").click(function () {
+        destCookie();
+        minsal_ui_cargar_vista('login')
+    });
+
+</script>
+
+<div class="contenido">
+    <h1 class="text-center m-2">REGISTRO / PRE-AGENDAR DE PERSONA SIN NÚMERO DE IDENTIFICACIÓN</h1>
+   
+        <div id="bl1" class="p-4 shadow bg-white round-div">
+            <p class="text-center mb-1"><b>INFORMACIÓN PERSONAL</b></p>
+            <hr>
+        
+            <div class="container-fluid mt-1">
+                <form id="formConfirm" method="post" autocomplete="off" >
+                <div class="row">
+                    <div class="col-md-6">
+                
+                        <div class="form-group">
+                            <label for="primer_nombre" class="form-label">PRIMER NOMBRE *</label>
+                            <input type="text" name="primer_nombre" id="primer_nombre" class="form-control" maxlength="50">
+                            <div id="primer_nombre_err"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="primer_apellido" class="form-label">PRIMER APELLIDO *</label>
+                            <input type="text" name="primer_apellido" id="primer_apellido" class="form-control" maxlength="50">
+                            <div id="primer_apellido_err"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fecha_nacimiento" class="form-label">FECHA NACIMIENTO *</label>
+                            <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control">
+                            <div id="fecha_nacimiento_err"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_sexo" class="form-label">SEXO *</label>
+                            <select name="id_sexo" id="id_sexo" class="form-control">
+                                <option value = "">-Seleccione-</option>
+                            </select>
+                            <div id="id_sexo_err"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefono" class="form-label">TELÉFONO *</label>
+                            <input type="text" name="telefono" id="telefono" placeholder="####-####" required="required" class="form-control">
+                            <div id="telefono_err"></div>
+                        </div>
+                        
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="segundo_nombre" class="form-label">SEGUNDO NOMBRE</label>
+                            <input type="text" name="segundo_nombre" id="segundo_nombre" class="form-control" maxlength="50">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="segundo_apellido" class="form-label">SEGUNDO APELLIDO</label>
+                            <input type="text" name="segundo_apellido" id="segundo_apellido" class="form-control" maxlength="50">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_pais_nacimiento" class="form-label">PAÍS NACIMIENTO *</label>
+                            <select name="id_pais_nacimiento" id="id_pais_nacimiento" class="form-control pais">
+                                <!--<option value="">País</option>-->
+                            </select>
+                            <div id="id_pais_nacimiento_err"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profesion" class="form-label">PROFESIÓN</label>
+                            <input type="search" name="" id="profesion" class="form-control" placeholder="Buscar...">
+                            <input type="hidden" name="id_profesion" id="id_profesion" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correo" class="form-label">CORREO ELECTRÓNICO</label>
+							<input id="correo" name="correo" type="email" class="form-control">
+                        </div>
+
+                    </div>
+                </div>
+
+                <br>
+                <p class="text-center mb-2"><b>DOMICILIO / DIRECCIÓN ACTUAL</b></p>
+                <hr>
+
+                <div class="container-fluid mt-1">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_pais_domicilio" class="form-label">PAÍS *</label>
+                                <select name="id_pais_domicilio" id="id_pais_domicilio" class="form-control pais">
+                                    <!--<option value="">País</option>-->
+                                </select>
+                                <div id="id_pais_domicilio_err"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_municipio_domicilio" class="form-label">MUNICIPIO *</label>
+                                <select name="id_municipio_domicilio" id="id_municipio_domicilio" class="form-control">
+                                    <option value="">-Seleccione-</option>
+                                </select>
+                                <div id="id_municipio_domicilio_err"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_colonia" class="form-label">COLONIA / BARRIO / CASERÍO</label>
+                                <select name="id_colonia" id="id_colonia" class="form-control">
+                                    <option value="">-Seleccione-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="casa_apartamento" class="form-label">N° CASA / APARTAMENTO</label>
+                               <input type="text" class="form-control" name="casa_apartamento" id="casa_apartamento" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="id_area" class="form-label">Área *</label>
+                                <select name="id_area" id="id_area" class="form-control">
+                                    <option value = "">-Seleccione-</option>
+                                </select>
+                                <div id="id_area_err"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="area" class="form-label">¿Tiene comorbilidades?</label>
+                                <select name="cmrb" id="cmrb" class="form-control">
+                                    <option value="1">No</option>
+                                    <option value="2">Sí</option>
+                                </select>
+                                <div id="lstCmrb" style="display: none;">
+                                    <div id="showCmrb" class="mt-4">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_departamento_domicilio" class="form-label">DEPARTAMENTO *</label>
+                                <select name="id_departamento_domicilio" id="id_departamento_domicilio" class="form-control">
+                                    <!--<option value="">Departamento</option>-->
+                                </select>
+                                <div id="id_departamento_domicilio_err"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_canton" class="form-label">CANTÓN</label>
+                                <select name="id_canton" id="id_canton" class="form-control">
+                                    <option value="">-Seleccione-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="calle_avenida" class="form-label">CALLE / AVENIDA</label>
+                               <input type="text" class="form-control" name="calle_avenida" id="calle_avenida" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="id_nacionalidad" class="form-label">NACIONALIDAD *</label>
+                                <select name="id_nacionalidad" id="id_nacionalidad" class="form-control">
+                                    <option value="">-Seleccione-</option>
+                                </select>
+                                <div id="id_nacionalidad_err"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="covid" class="form-label">COVID *</label>
+                                <select name="covid" id="covid" class="form-control">
+                                    <option value="">-Seleccione-</option>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                </select>
+                                <div id="covid_err"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="covid" class="form-label">¿Tiene discapacidades?</label>
+                                <select name="disc" id="disc" class="form-control">
+                                    <option value="1">No</option>
+                                    <option value="2">Sí</option>
+                                </select>
+                                <div id="lstDisc" style="display: none;">
+                                    <div id="showDisc" class="mt-4">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text_r text-xs text-gray-700 mb-1">* Campos requeridos</div>
+
+                <!--<br>
+                <p class="text-center mb-1"><b>COMORBILIDADES</b></p>
+                <hr>
+
+                <div class="container-fluid mt-1">
+                    <div class="row">
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" name="enf1" id="enf1" class="custom-checkbox">
+                            <label for="enf1" class="form-label">Hipertensión</label> 
+                        </div>
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" name="enf2"  id="enf2" class="custom-checkbox">
+                            <label for="enf2" class="form-label">Enfermedades del corazón</label> 
+                        </div>
+                    </div>
+                </div>
+                    
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" name="enf3"  id="enf3" class="custom-checkbox">
+                            <label for="enf3" class="form-label">Diabetes</label>
+                        </div>
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" id="enf4" name="enf4" class="custom-checkbox">
+                            <label for="enf4" class="form-label">Obesidad</label>
+                        </div>
+                    </div>
+                </div>
+                    
+                <div class="container-fluid mb-2">
+                    <div class="row">
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" name="enf5"  id="enf5" class="custom-checkbox">
+                            <label for="enf5" class="form-label">Enfermedades renales</label>
+                        </div>
+                        <div class="text_label col-sm-6">
+                            <input type="checkbox" name="enf6"  id="enf6" class="custom-checkbox">
+                            <label for="enf6" class="form-label">Cancer</label>
+                        </div>
+                    </div>
+                </div>-->
+                <div class="text-center mt-3">
+                    <button id="bt_send" type="button" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+            
+        
+	<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 mt-3 md:mb-8" style="display: none;">MSG</div>
+    </div>
+                
+<div><br><br><br><br><br></div>
+<div><br><br><br><br><br></div>    
+</div>

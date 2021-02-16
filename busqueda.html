@@ -1,0 +1,529 @@
+<style>
+</style>
+
+<script>
+
+	/*var validator1 = $("#formGeneral1").validate({
+		rules: {
+			super_buscar: { required: true }
+		},
+		messages: {
+			super_buscar: "Por favor escriba DUI o nombre de la persona"
+		}
+	});*/
+	/*var element = document.getElementById('dui');
+
+	var maskOptions = {
+		mask: '00000000-0'
+	};
+
+	var mask = IMask(element, maskOptions);*/
+
+	$("#v1").click(function () {
+		$('#bl3').hide();
+		$('#v1').css({
+			'background-color': '#6c6c6c',
+			'color': 'white',
+		});
+		$('#v2').css({
+			'background-color': '#c1c0c0',
+			'color': 'black',
+		});
+		$("#bl2").hide();
+		$("#bl1").show();
+	});
+
+
+
+	$("#v2").click(function () {
+		$('#bl3').hide();
+		$('#v2').css({
+			'background-color': '#6c6c6c)',
+			'color': 'white',
+		});
+		$('#v1').css({
+			'background-color': '#c1c0c0',
+			'color': 'black',
+		});
+		$("#bl2").show();
+		$("#bl1").hide();
+	});
+
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+	function cl(obj) {
+		if (obj === null || obj === undefined) {
+			obj = "";
+		}
+		return obj
+	}
+
+
+	function toggle_prop(id) {
+		var g = document.getElementById(id);
+		if (g.disabled == false) {
+			g.disabled = true;
+		} else {
+			g.disabled = false;
+		}
+	}
+
+
+	function toggle_show(id) {
+		var e = document.getElementById(id);
+
+		if (e.style.display == 'none') {
+			e.style.display = 'block';
+		}
+		else {
+			e.style.display = 'none';
+		}
+	}
+
+
+	function redir(va) {
+		if (va == 1) {
+			console.log("ACTUALIZAR");
+			minsal_ui_cargar_vista('2btn')
+		} else {
+			console.log("SELECCIONAR");
+			minsal_ui_cargar_vista('3btn')
+		}
+	}
+
+	$("#bt_main1").click(function () {
+		var se = $('#dui').val();
+		buscaRes(se);
+	});
+
+	$("#bt_main2").click(function () {
+		nombre = toTitleCase(cl($('#p_nombre').val()) + " " + cl($('#s_nombre').val()));
+		apellido = toTitleCase(cl($('#p_apellido').val()) + " " + cl($('#s_apellido').val()));
+		n_completo = nombre + " " + apellido;
+		n_completo = n_completo.replace(/\s\s+/g, ' ');
+
+		console.log(n_completo);
+
+		buscaRes(n_completo);
+
+	});
+
+
+	function getResults(d, f) {
+
+		grecaptcha.ready(function () {
+			grecaptcha.execute(recaptcha_variable, { action: 'submit' }).then(function (token) {
+
+				$("#show-div").show();
+
+				$.ajax({
+					async: true,
+					method: "GET",
+					crossDomain: true,
+					mode: 'cors',
+					headers: {
+						'Content-Type': 'application/json',
+						'Accept': 'application/json',
+						'Authorization': token
+					},
+					url: api_url + 'verificar/' + d + '/' + f,
+					success: function (msg) {
+
+						console.log(msg);
+
+						$("#show-div").hide(msg);
+						if (msg['resultado'] == "OK") {
+							var p_data = msg['datos'];
+							var jdata = JSON.stringify(p_data);
+							setCookie("p_data", jdata, 1);
+							var obj = JSON.parse(getCookie("p_data"));
+							minsal_ui_cargar_vista('2btn')
+
+						} else if (msg['resultado'] == "NOAPLICABLE") {
+							var p_data = msg['datos'];
+							var jdata = JSON.stringify(p_data);
+							setCookie("p_data", jdata, 1);
+							var obj = JSON.parse(getCookie("p_data"));
+							minsal_ui_cargar_vista('2btn')
+
+						} else if (msg['resultado'] == "CITAHECHA") {
+							var p_data = msg['datos'];
+							var jdata = JSON.stringify(p_data);
+							setCookie("p_data", jdata, 1);
+							var obj = JSON.parse(getCookie("p_data"));
+							minsal_ui_cargar_vista('2btn')
+
+						} else if (msg['resultado'] == "CITACONFIRMADA") {
+							var p_data = msg['datos'];
+							var jdata = JSON.stringify(p_data);
+							setCookie("p_data", jdata, 1);
+							var obj = JSON.parse(getCookie("p_data"));
+							minsal_ui_cargar_vista('3btn')
+
+						} else if (msg['resultado'] == "REVISIONPENDIENTE") {
+							var p_data = msg['datos'];
+							var jdata = JSON.stringify(p_data);
+							setCookie("p_data", jdata, 1);
+							var obj = JSON.parse(getCookie("p_data"));
+							minsal_ui_cargar_vista('2btn')
+
+						}
+						else if (msg['resultado'] == "BOT") {
+							$("#msg").html("Su solicitud falló nuestra revisión de seguridad. Intente mas tarde.").show();
+						}
+						else {
+
+							$("#msg").html("El DUI ingresado no ha sido encontrado.").show();
+						}
+					}
+				});
+
+			});
+		});
+	}
+
+	function buscaRes(va) {
+		$('#fotos').html("");
+
+		if ($("#formGeneral1").valid() == true) {
+			event.preventDefault();
+
+			$("#msg").hide();
+
+			var busca = va;
+			var api_url = "https://api.busqueda.sv.qualium.net/";
+
+			$.ajax({
+				async: true,
+				method: "GET",
+				crossDomain: true,
+				mode: 'cors',
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'Authorization': getCookie('token')
+				},
+				url: api_url + 'api/buscar/' + busca,
+				success: function (msg) {	
+					var selectValues = msg;
+					if (selectValues.length == 0) { $('#msg').html("No se encontraron Resultados").show(); } else { $('#msg').hide; }
+						$.each(selectValues, function (key, value) {
+							va = value;
+							dui = va["dui"];
+							foto = va["foto/img_foto"];
+							nombre = toTitleCase(cl(va['primer_nombre']) + " " + cl(va['segundo_nombre']) + " " + cl(va['tercer_nombre']));
+							apellido = toTitleCase(cl(va['primer_apellido']) + " " + cl(va['segundo_apellido']) + " " + cl(va['apellido_casada']));
+							n_completo = nombre + " " + apellido;
+							fecha_na = va["fecha_nacimiento"];
+							edad = calcularEdad(fecha_na);
+							colonia = va["colonia/nombre_min"];
+							muni = va["municipio/nombre"];
+							depto = va["municipio/departamento/nombre"];
+
+							var bt1 = "<button class='btn btn-primary btn-sm p-1' type='button' onclick='getResults(&#39;" + dui + "&#39;,&#39;" + fecha_na + "&#39;)'>Seleccionar Ciudadano</button>";
+							var bt2 = "<button class='btn btn-primary btn-sm p-1' type='button' onclick='redir(2)'>Actualizar Ciudadano</button>";
+
+
+							if (va["tipo_doc"] == 2) {
+								mi_foto = "https://minsal-vacunacion-fotos.s3.amazonaws.com/r/" + foto;
+								t_doc = "Carné";
+							} else {
+								mi_foto = "https://minsal-vacunacion-fotos.s3.amazonaws.com/" + foto;
+								t_doc = "DUI";
+							}
+
+							$('#fotos')
+								.append($("<img style='float:left; padding-right: 10px;'>" +
+									"<div class='itexto'><div><br></div>" +
+									"<div><b>" + n_completo + "</b></div>" +
+									"<div><b>Documento :		</b>" + dui + "</div>" +
+									"<div><b>Edad: 				</b>" + edad + "</div>" +
+									"<div><b>Fecha Nacimiento: 	</b>" + fecha_na + "</div>" +
+									"<div><br></div>" +
+									"<div id='btm'>" + bt1 + "</div>" +
+									"</div><br><br><br>"
+								)
+									.attr('alt', dui)
+									.attr("src", mi_foto)
+									.height('130px')
+								).append();
+
+						});
+				}
+			});
+		}
+	}
+
+
+	$(document).on("keydown", ":input:not(textarea)", function (event) {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			$("#bt_main").click();
+		}
+	});
+
+
+	function mostrarbl3() {
+		$('#bl3').fadeIn(700);
+		$("html, body").animate({ scrollTop: $(document).height() }, 1000);//scrollea hasta el final de la pagina
+	}
+
+	function loadChangePassword(){
+        $('#pass').modal('show')
+	}
+	$('#bt_save').click(function(){
+		
+		var password = $('#password').val();
+		
+		$('#password_err').empty();
+
+		if(password == ''){
+            $('#password_err').html("<span class='text-danger'>La contraseña es requerida</span>");
+            $('#password').focus();
+            return false;
+		}
+		var obj = JSON.parse(getCookie("edata"));  
+		var id_usuario = obj['id_usuario'];
+		
+		event.preventDefault();
+
+		datos = {
+			"id_usuario" : id_usuario,
+			"password" : password
+		}
+
+		url = api_url + 'usuario/password';
+
+		$.ajax({
+			url: url,
+			data: JSON.stringify(datos),
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': getCookie('token')
+			},
+			success: function (data) {
+				var datos = data['datos'];
+				//console.log(datos.usuario);
+				var hash = CryptoJS.MD5(datos.usuario.toLowerCase() + ":" + password).toString();
+				$('#pass').modal('hide');
+				
+				setCookie("token", hash, 1);
+				
+				var obj = JSON.parse(getCookie("cambio"));
+				obj['cambio'] = 1;
+				var cp = JSON.stringify(obj);
+				setCookie("cambio", cp ,1);
+			},
+			error: function (jqXHR, status, err) {
+				$('#msg').html(err).show();
+			},
+		});
+	});
+	
+	$("#bt_close").click(function () {
+		destCookie();
+		setCookie("cambio","",-1);
+		//minsal_ui_cargar_vista('login')
+	});
+	$(document).ready(function(){
+
+		var obj = JSON.parse(getCookie("edata"));  
+		var cambio_password = obj['cambio_password'];
+		var cp = JSON.parse(getCookie("cambio"));
+		var cambio            = cp['cambio'];
+		//console.log(cambio);
+		//if(cambio_password == 0){
+			if(cambio == 0){
+				loadChangePassword();
+			}
+			
+		//}
+	});
+
+</script>
+
+<div class="contenido">
+
+	<!--div id="div_ini" class="container-fluid"-->
+	<div id="other">
+		<h3 class="text-center mb-2 md:mb-4 leading-tight titulo">BÚSQUEDA DE CIUDADANOS</h3>
+		<div class="text_i"></div>
+
+		<div class="flex flex-row text-lg">
+			<div id="v1"
+				class="block_c flex-1 leading-tight text-center px-6 bg-gray-200 rounded-t cursor-pointer st-all"
+				style="color:white"> Buscar por Documento </div>
+			<div id="v2"
+				class="block_c flex-1 leading-tight text-center px-6 bg-gray-200 rounded-t cursor-pointer st-all">
+				Buscar por Nombre </div>
+		</div>
+
+		<form id="formGeneral1" method="get" action="" novalidate="novalidate">
+			<div id="bl1">
+				<div class="p-4 shadow bg-white marco-div">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="dui" class="form-label">Tipo de Documento *</label></p>
+								<select class='form-control' name='t_doc' id='t_doc'>
+									<option value='dui'>DUI</option>
+									<option value='carne'>Carné de Residente</option>
+								</select>
+							</div>
+
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="dui" class="form-label">Número de Documento *</label></p>
+								<input type="text" name="dui" id="dui" placeholder="" required="required" inputmode="numeric"
+									class="form-input" value="">
+							</div>
+
+						</div>
+						<div class="row">
+							<div class="col-sm-12 p-4">
+								<center><button id="bt_main1" type="button" onclick="mostrarbl3();"
+										class="btn btn-primary p-1">CONSULTAR</button></center>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="bl2" style="display:none">
+				<div class="p-4 shadow bg-white marco-div">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="p_nombre" class="form-label">* Primer Nombre</label></p>
+								<input type="text" name="p_nombre" id="p_nombre" placeholder="" required="required"
+									class="form-input">
+							</div>
+
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="s_nombre" class="form-label">Segundo Nombre</label></p>
+								<input type="text" name="s_nombre" id="s_nombre" placeholder="" class="form-input">
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="p_apellido" class="form-label">Primer Apellido</label></p>
+								<input type="text" name="p_apellido" id="p_apellido" placeholder="" class="form-input">
+							</div>
+
+							<div class="col-sm-6">
+								<p class="mb-1"><label for="s_apellido" class="form-label">Segundo Apellido</label></p>
+								<input type="text" name="s_apellido" id="s_apellido" placeholder="" class="form-input">
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-sm-12 p-4">
+								<center><button id="bt_main2" type="button" onclick="mostrarbl3();"
+										class="btn btn-primary mb-1">CONSULTAR</button></center>
+							</div>
+						</div>
+					</div>
+
+					<div class="text_r text-xs text-gray-700 ">* Campos requeridos</div>
+				</div>
+			</div>
+			<input id="tdoc" name="tdoc" type="hidden" value="1">
+
+		</form>
+		<div><br></div>
+		<form id="formGeneral2" method="get" action="" novalidate="novalidate">
+			<div id="bl3" style="display:none">
+				<div class="p-2 shadow bg-white round-div">
+					<div class="container-fluid">
+						<!--
+                        <div class="row">
+                            <div class="col-sm-12">
+								<center><h1 class="text-center mb-2 md:mb-4 leading-tight titulo">RESULTADOS</h1></center>
+								<hr>
+							</div>
+						</div>
+						-->
+
+						<div class="row">
+							<div class="col-sm-12">
+
+								<div id="fotos"></div>
+								<div id="msg"
+									class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8"
+									style="display: none;">MSG</div>
+							</div>
+						</div>
+					</div>
+					<!--
+					<hr>
+					<center><button class="btn btn-secondary btn-sm">REALIZAR OTRA BÚSQUEDA</button></center>
+					-->
+				</div>
+			</div>
+		</form>
+		<div><br></div>
+		<div><br></div>
+		<div><br></div>
+		<div><br></div>
+
+	</div>
+
+	<div class="modal" id="pass" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+		  	<div class="modal-content">
+				<div class="modal-header">
+				  <h5 class="modal-title">Cambio de contraseña</h5>
+				  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+				  </button>
+				</div>
+				<div class="modal-body">
+				  <p>Estimado usuario, por favor actualice su contraseña</p><br>
+				  <input type="password" class="form-input" id="password" placeholder="Nueva contraseña">
+				  <div id="password_err"></div>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-primary btn-sm" id="bt_save">Guardar</button>
+				  <button type="button" class="btn btn-danger btn-sm" id="bt_cancel" data-dismiss="modal">Cerrar</button>
+				</div>
+		  	</div>
+		</div>
+  	</div>
+
+</div>

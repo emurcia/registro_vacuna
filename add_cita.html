@@ -1,0 +1,699 @@
+<style>
+
+@media screen and (min-width: 300px) {
+    .contenido { margin: auto; width: 99%; border: 0px solid white; padding: 10px; }
+}
+
+@media screen and (min-width: 500px) {
+    .contenido { margin: auto; width: 99%; border: 0px solid white; padding: 10px; }
+}
+
+@media screen and (min-width: 700px) {
+    .contenido { margin: auto; width: 600px; border: 0px solid white; padding: 10px; }
+}
+
+@media screen and (min-width: 1000px) {
+    .contenido { margin: auto; width: 600px; border: 0px solid white; padding: 10px; }
+}
+
+@media screen and (min-width: 1200px) {
+    .contenido { margin: auto; width: 600px; border: 0px solid white; padding: 10px; }
+}
+
+.text_i {
+    margin: 0px 0px 16px;
+}
+
+.text_r {
+    font-size: 12px;
+}
+
+
+.bt {
+    border-radius: .25rem;
+    padding: .25rem .5rem;
+    border-width: 1px;
+    border-color: transparent;
+    white-space: nowrap;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.bt.md {
+    padding: 15px 25px;
+}
+
+
+.contenedorprincipal {
+    height: 100%;
+    position: relative
+}
+
+
+.loading-div-background {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+background: rgba(0, 0, 0, 0.2);
+width: 100%;
+height: 100%;
+}
+
+.loading-div {
+height: 200px;
+background-color: rgba(255, 255, 255, 0);
+
+position: absolute;
+left: 50%;
+top: 50%;
+margin-left: -150px;
+margin-top: -100px;
+}
+
+.loading-div h2 {
+color: black !important;
+font-size: 25px;
+}
+.text-center {
+border-radius: 25px;
+}
+#cur_data {
+padding: 10px;
+background-color:#ffffff;
+border-radius: 25px;
+}
+
+.bt_close {
+width:100%;
+text-align: right;
+}
+
+#bt_res {
+padding: 8px 20px 8px 20px;
+}
+
+.btn-xl {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    width: 148px;
+}
+
+.form-control {
+    font-size: inherit;
+}	
+
+</style>
+
+<script>
+    // var element = document.getElementById('phone');
+    // var maskOptions = {
+    // mask: '0000-0000'
+    // };
+    // var mask = IMask(element, maskOptions);
+
+
+    var validator1 = $("#formConfirm").validate({
+        rules: {
+            phone: { required: true, minlength: 9 },
+            email: { required: false, email: true },
+            confirm: { required: true },
+            hora: { required: true }
+        },
+        messages: {
+            phone: "Por favor escriba su Teléfono",
+            email: "Por favor escriba un correo electronico valido",
+            confirm: "&nbsp; Debe aceptar terminos y condiciones para continuar",
+            hora: "Seleccione una fecha valida"
+            
+
+        }
+    });
+
+    $("#bt_p41").click(function () {
+        if ($("#formConfirm").valid() == true) {
+            $("#show-div").show();
+
+            var obj = JSON.parse(getCookie("p_data"));
+            var dui = obj['dui'];
+            var fecha_nacimiento = obj['fecha_nacimiento'];
+
+            datos = {
+                "datos": {
+                    "id_establecimiento": $("#centro").val(),
+                    "fecha": $("#dob_3").val(),
+                    "hora": $("#hora").val(),
+                }
+            };
+
+            url = api_url + 'cambio/cita/' + dui + '/' + fecha_nacimiento;
+            $.ajax({
+                url: url,
+                data: JSON.stringify(datos),
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                success: function (msg) {
+                    var p_data = msg['datos'];
+                    var jdata = JSON.stringify(p_data);
+                    setCookie("p_data", jdata, 1);
+
+                    $("#show-div").hide();
+                    $('#contenedorprincipal').load('cfr.html');
+                }
+            });
+
+        }
+    });
+
+    function getCentros() {
+		var muni = $("#muni").val();
+
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'establecimientos/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+						v_id = value.id;
+						v_nombre = value.nombre;
+
+						$('#centro')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+
+					});
+					if (v_id == 0) {
+							$('#centro').html("<option value=''>---</option>"); 
+							$('#dob_3').attr('disabled',true);
+							$('#hora').attr('readonly', true);
+						} else {
+							$('#dob_3').attr('disabled',false);
+							$('#hora').attr('readonly', false);
+							getFechas($("#centro").val());
+						}
+
+				}
+
+			}
+		});
+	}
+
+	function getCupos() {
+
+		$('#hora').html("");	
+		var c_fecha = $("#dob_3").val();
+		var c_centro = $("#centro").val();
+
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'cupos/por/establecimiento/' + c_centro + '/fecha/' + c_fecha,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+					var v_id = ""; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+
+						v_id = value;
+						v_nombre = value;
+
+						$('#hora')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+
+					});
+				}
+
+			}
+		});
+    }
+    
+    function getMunis(depto) {
+
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'municipios',
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var selectValues = msg['datos'];
+
+                    var v_id = 0; var v_nombre = "";
+                    $.each(selectValues, function (key, value) {
+                        if (value.id_departamento == depto) {
+                            v_id = value.id;
+                            v_nombre = value.nombre;
+                            $('#muni')
+                                .append($("<option></option>")
+                                    .attr("value", v_id)
+                                    .text(v_nombre));
+
+                        }
+                    });
+
+                }
+
+            }
+        });
+    }
+    
+    $("#bt_p40").click(function () {
+        $('#contenedorprincipal').load('p3.html');
+    });		
+
+    function getFechas(id_establecimiento) {
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'fechas/por/establecimiento/' + id_establecimiento,
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var fechas = msg['datos']['fechas'];
+
+                    if (fechas.length == 0) {
+                        $('#dob_3').attr('disabled', true);
+                        $('#hora').attr('readonly', true);
+                    } else {
+                        $('#dob_3').attr('disabled', false);
+                        $('#hora').attr('readonly', false);
+
+                        var dateParts = fechas[0].split("-");
+                        var jsDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2].substr(0,2));
+
+                        $("#dob_3").datepicker("destroy");
+                        $('#dob_3').datepicker({
+                            defaultDate: jsDate,
+                            beforeShowDay: function (date) {								
+                                var dt_ddmmyyyy = date.getFullYear() + '-' + ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' + ('00' + date.getUTCDate()).slice(-2);
+                                return [(fechas.indexOf(dt_ddmmyyyy) != -1), 'activo', ''];
+                            },
+                            onSelect: function () {
+                                var dateObject = $(this).datepicker('getDate');
+                                var dateFormated = jQuery.datepicker.formatDate('yy-mm-dd', dateObject);
+                                $("#dob_3").val(dateFormated);
+                                getCupos();
+                            },
+                            changeMonth: true,
+                            changeYear: true,
+                            yearRange: "-0:+0",
+                            dateFormat: "yy-mm-dd",
+                        });
+                    }
+
+                }
+
+            }
+        });
+    }
+
+    function getColonias(muni) {
+
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'colonias/por/municipio/' + muni,
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var selectValues = msg['datos'];
+                    var v_id = 0; var v_nombre = "";
+                    $.each(selectValues, function (key, value) {
+
+                        v_id = value.id;
+                        v_nombre = value.nombre_min;
+
+                        $('#colonia')
+                            .append($("<option></option>")
+                                .attr("value", v_id)
+                                .text(v_nombre));
+
+
+                    });
+
+                }
+
+            }
+        });
+    }
+
+    function getCantones(muni) {
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'cantones/por/municipio/' + muni,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+
+						v_id = value.id;
+						v_nombre = value.nombre_min;
+
+						$('#canton')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+
+
+					});
+
+				}
+
+			}
+		});
+	}
+
+    function getDeptos() {
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'departamentos',
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					var v_id = 0; var v_nombre = "";
+					$.each(selectValues, function (key, value) {
+						v_id = value.id;
+						v_nombre = value.nombre;
+						$('#depto')
+							.append($("<option></option>")
+								.attr("value", v_id)
+								.text(v_nombre));
+					});
+
+				}
+
+			}
+		});
+    }
+    
+    function muniColoniaCur(colonia) {
+		$('#colonia').html("");
+		$.ajax({
+			async: true,
+			method: "GET",
+			crossDomain: true,
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			url: api_url + 'colonias/' + colonia,
+			success: function (msg) {
+				if (msg['resultado'] == "OK") {
+					var selectValues = msg['datos'];
+
+					v_id = selectValues['id'];
+					v_nombre = selectValues['nombre_min'];
+
+					$('#colonia')
+						.append($("<option></option>")
+							.attr("value", v_id)
+							.text(v_nombre));
+				}
+
+			}
+		});
+
+	}
+    function clean(obj) {
+	  for (var propName in obj) {
+		if (obj[propName] === null || obj[propName] === undefined) {
+			obj[propName]="";
+		}
+	  }
+	  return obj
+    }
+    
+    function defaultData() {
+		var obj = clean(JSON.parse(getCookie("p_data")));
+		var i_depto = obj['id_departamento_domicilio'];
+		var n_depto = obj['municipio']['departamento']['nombre'];
+		var i_muni = obj['id_municipio_domicilio'];
+		var n_muni = obj['municipio']['nombre'];
+
+		var i_colonia = obj['id_colonia_domicilio'];
+
+
+		$('#depto').append($("<option></option>").attr("value", i_depto).text(n_depto));
+		$('#muni').append($("<option></option>").attr("value", i_muni).text(n_muni));
+
+
+		if (obj['id_canton_domicilio'] == null) {
+			muniCantonCur(i_muni);
+		}
+		muniColoniaCur(i_colonia);
+
+		getDeptos();
+		getMunis(i_depto);
+		getCantones(i_muni);
+		getColonias(i_muni);
+
+	}
+
+    $("#depto").change(function () {
+        $('#muni').html("");
+        $('#centro').html("");
+        $('#dob_3').html("");
+        $('#hora').html(""); 
+        getMunis(this.value);
+    });
+
+    $("#muni").change(function () {
+        $('#centro').html("");
+        $('#dob_3').html("");
+        $('#hora').html("");		
+        getCentros(this.value);
+    });
+
+    $("#centro").change(function () {
+        getFechas($(this).val());
+    });
+
+    $("#bt_out").click(function () {
+        $('#contenedorprincipal').load('p1.html');
+    });		
+    
+    $(document).ready(function () {
+        $("#show-div").hide();
+        defaultData();
+        getCentros();
+    });
+    
+    
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ1DR8zNeBqy3ADJBBopzvjHX_anBWD4Q&callback=initMap&region=SV&language=es&libraries=&v=weekly" defer></script>
+<script>
+//let map;
+var activeInfoWindow;    
+var markers = [];
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+        streetViewControl: false,
+        mapTypeControl: false,
+        center: { lat: 13.650739575861968, lng: -88.89924161598454 },
+        zoom: 8,
+    });
+
+    let icon = {
+        url: "images/pin1.png",
+        scaledSize: new google.maps.Size(30, 30)
+    };
+
+    let icon2 = {
+        url: "images/pin2.png",
+        scaledSize: new google.maps.Size(35, 35)
+    };
+
+    persona = JSON.parse(getCookie("p_data"));
+
+    $.getJSON(api_url + 'establecimiento/coordenadas', function (data) {
+        $.each(data['datos'], function (key, val) {
+            //console.log(val);
+            const marker = new google.maps.Marker({
+                position: { lat: parseFloat(val.latitud), lng: parseFloat(val.longitud) },
+                map,
+                title: val.nombre,
+                icon: icon
+            });
+
+            const contentString = '<div>' + val.nombre + '</div>';
+            const infowindow = new google.maps.InfoWindow({
+                content: contentString,
+            });
+
+            marker.set("key", key);
+            marker.set("val", val);
+
+            marker.addListener("click", () => {
+                if (activeInfoWindow ) { activeInfoWindow.close();}
+                for (var j = 0; j < markers.length; j++) {
+                    markers[j].setIcon(icon);
+                }
+
+                marker.setIcon(icon2);
+                infowindow.open(map, marker);
+                activeInfoWindow = infowindow;
+
+                $("#dob_3").val('');
+                $("#depto").val(parseInt(this.id_departamento)).change();
+                setTimeout(() => $("#muni").val(parseInt(this.id_municipio)).change(),2000);
+                setTimeout(() => $("#centro").val(this.id).change(), 3000);
+            });
+
+            if (val.id == persona['establecimiento']['id'])
+            {
+                marker.setIcon(icon2);
+                map.setZoom(10);
+                map.panTo(marker.position);
+                new google.maps.event.trigger( marker, 'click' );
+            }
+
+            markers.push(marker);
+        });
+    });
+}
+</script>
+
+<div class="contenido">
+<div class="bt_close" ><button id="bt_out" type="button" class="btn btn-info">SALIR</button></div>
+
+        <h1 class="text-center mb-2 md:mb-4 leading-tight">Elija otro centro de vacunación</h1>
+
+        <div class="mb-4 md:mb-8">
+
+            <form id="formConfirm" method="get" action="" novalidate="novalidate">
+                <div id="bl1" style="">
+                    <div class="p-4 shadow bg-white">
+                        <div class="mb-2"><hr>
+                            <p class="mb-1">Indicaciones: Por favor, ingrese la información solicitada. Antes de
+                                enviarla, revise que no haya errores.
+                                Su información será manejada con total discreción</p>
+                            <hr><br>
+                            
+                            <div class="container-fluid">
+                                <div style="height:450px;" id="map"></div>
+                            </div>
+
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="text_label col-sm-12">
+                                        <label for="depto" class="form-label">Departamento *</label>
+                                        <!-- <input type="text" name="depto" id="depto" placeholder="" 	required="required" class="form-input"> -->
+                                        <select class="form-control" id="depto"></select>
+
+                                    </div>
+                                    <div class="text_label col-sm-12">
+                                        <label for="muni" class="form-label">Municipio *</label>
+                                        <!-- <input id="muni" name="muni" type="text" placeholder=""		required="required" class="form-input"> -->
+                                        <select class="form-control" id="muni"></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="text_label col-sm-12">
+                                        <label for="centro" class="form-label">Establecimiento *</label>
+                                        <!-- <input type="text" name="centro" id="centro" 	placeholder="" required="required" class="form-input"> -->
+                                        <select class="form-control" name="centro" id="centro"></select>
+                                    </div>
+                                    <div class="text_label col-sm-12">
+                                        <label for="dob_3" class="form-label">Fecha *</label>
+                                        <input id="dob_3" name="dob_3" type="text"
+                                            class="form-input date-pickr flatpickr-input" readonly="readonly">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="text_label col-sm-12">
+                                        <label for="hora" class="form-label">Hora *</label>
+                                        <select class="form-control" name="hora" id="hora" class="required"></select>
+                                    </div>
+                                    <div class="text_label col-sm-12">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="text_r text-xs text-gray-700">* Campos requeridos</div>
+
+            </form>
+
+            <input id="tdoc" name="tdoc" type="hidden" value="1">
+
+        </div>
+
+        <div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8"
+            style="display: none;">MSG</div><br>
+        <div class="text-center">
+            <button id="bt_p41" type="button" class="btn btn-primary">CONFIRMAR</button>
+            <button id="bt_p40" type="button" class="btn btn-danger" >CANCELAR</button>
+        </div>
+        <div><br></div>
+        <div><br></div>
+        <div><br></div>
+        <div><br></div>
+
+    </div>
+
+</div>

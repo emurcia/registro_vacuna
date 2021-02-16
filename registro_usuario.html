@@ -1,0 +1,241 @@
+<style>
+</style>
+
+<script>
+
+	/*var validator1 = $("#formGeneral1").validate({
+		rules: {
+			super_buscar: { required: true }
+		},
+		messages: {
+			super_buscar: "Por favor escriba DUI o nombre de la persona"
+		}
+	});*/
+	/*var element = document.getElementById('dui');
+
+	var maskOptions = {
+		mask: '00000000-0'
+	};
+
+	var mask = IMask(element, maskOptions);*/
+	
+	$("#v1").click(function () {
+		$('#v1').css({
+			'background-color': 'rgba(66,153,225,var(--bg-opacity))',
+			'color': 'white',
+		});
+		$('#v2').css({
+			'background-color': 'rgba(237,242,247,var(--bg-opacity))',
+			'color': 'black',
+		});
+		$("#bl2").hide();
+		$("#bl1").show();
+	});
+
+
+
+	$("#v2").click(function () {	
+		$('#v2').css({
+			'background-color': 'rgba(66,153,225,var(--bg-opacity))',
+			'color': 'white',
+		});
+		$('#v1').css({
+			'background-color': 'rgba(237,242,247,var(--bg-opacity))',
+			'color': 'black',
+		});
+		$("#bl2").show();
+		$("#bl1").hide();
+	});
+
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+	function cl(obj) {
+		if (obj === null || obj === undefined) {
+			obj = "";
+		}
+		return obj
+	}
+
+
+	function toggle_prop(id) {
+		var g = document.getElementById(id);
+		if (g.disabled == false ) {
+			g.disabled = true;
+		}else {
+			g.disabled = false;
+		}
+	}	
+	
+
+	function toggle_show(id) {
+		var e = document.getElementById(id);
+		
+		if(e.style.display == 'none') {
+			e.style.display = 'block';
+			}
+		else {
+			e.style.display = 'none';
+			}
+	}	
+
+
+	$("#bt_main").click(function () {
+	});
+
+	$("#btn_sel").click(function () {
+		minsal_ui_cargar_vista('3btn')
+	});
+	
+	$("#btn_act").click(function () {
+		minsal_ui_cargar_vista('2btn')
+	});	
+
+	$(document).on("keydown", ":input:not(textarea)", function (event) {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			$("#bt_main").click();
+		}
+	});
+
+	$("#bt_close").click(function () {
+		destCookie();
+		minsal_ui_cargar_vista('login')
+	});
+
+	function mostrarbl3(){
+		$('#bl3').fadeIn(700);
+		$("html, body").animate({ scrollTop: $(document).height() }, 1000);//scrollea hasta el final de la pagina
+	}
+
+</script>
+
+<!--
+<div id="menu" class="bg-gray-500 p-2">
+	<div class="container mx-auto max-w-4xl">
+		<div class="flex flex-row items-center">
+			<div class="flex-1 relative">
+				 <button type="button" class="bt clear md">					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current w-6 h-6"><path fill-rule="evenodd" clip-rule="evenodd" d="M22 7V5H2V7H22ZM22 11V13H2V11H22ZM22 17V19H2V17H22Z"></path></svg></button> 
+			</div>
+			<div class="flex-none ml-4">
+				<button id="bt_close" type="button" class="bt clear uppercase text-sm">	<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fill-current inline align-middle"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.41421 1.29291L1 2.70712L7 8.70712V10H6C4.93165 10 4 10.7764 4 11.8333V20.1667C4 21.2236 4.93165 22 6 22H18C18.6301 22 19.2126 21.73 19.5845 21.2916L21 22.7071L22.4142 21.2929L2.41421 1.29291ZM18 19.7071L10.2929 12H6V20H18V19.7071ZM18 14.0787L20 16.0787V11.8333C20 10.7764 19.0684 10 18 10H17V7.00001C17 4.23859 14.7614 2.00001 12 2.00001C10.3441 2.00001 8.87619 2.80498 7.96627 4.04496L9.40869 5.48739C9.92918 4.59765 10.8948 4.00001 12 4.00001C13.6569 4.00001 15 5.34316 15 7.00001V10H13.9213L15.9213 12H18V14.0787ZM12 17C11.4477 17 11 16.5523 11 16C11 15.4477 11.4477 15 12 15C12.5523 15 13 15.4477 13 16C13 16.5523 12.5523 17 12 17Z"></path></svg> Cerrar sesión</button>
+			</div>
+		</div>
+	</div>
+</div>
+-->
+
+<div class="contenido">
+    
+	<!--div id="div_ini" class="container-fluid"-->
+	<div id="div_ini" class="container-fluid">
+		<h1 class="text-center mb-2 md:mb-4 leading-tight titulo">REGISTRAR USUARIO</h1>
+		<div class="text_i"></div>
+		
+		
+
+		<form id="formGeneral1" method="get" action="" novalidate="novalidate">
+			<div id="bl1">
+				<div class="p-4 shadow bg-white">                                       
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <p class="mb-1"><label for="usuario" class="form-label">Nombre de Usuario *</label></p>
+								<input type="text" name="usuario" id="usuario" placeholder="" required="required"	class="form-input" value="">
+							</div>
+                        </div>
+                        <div class= 'row'>
+							
+							<div class="col-sm-12">
+                                <p class="mb-1"><label for="dui" class="form-label">Establecimiento *</label></p>
+									<select class='form-control' name='t_doc' id='t_doc'>
+										<option value='dui'>UCSF San Miguelito</option>
+										<option value='carne'>Hospital San Rafael</option>
+									</select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <p class="mb-1"><label for="password" class="form-label">Password *</label></p>
+								<input type="password" name="password" id="password" placeholder="" required="required"	class="form-input" value="">
+							</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <p class="mb-1"><label for="passwordc" class="form-label">Confirme Password *</label></p>
+								<input type="password" name="passwordc" id="passwordc" placeholder="" required="required"	class="form-input" value="">
+							</div>
+                        </div>
+
+						
+						<div class="row">
+                            <div class="col-sm-12 p-4">								
+                                <center><button id="bt_main1" type="button" onclick="mostrarbl3();" class="btn btn-primary p-1">CONSULTAR</button></center>
+                            </div>
+                        </div>
+					</div>
+					<br>
+					<div class="text_r text-xs text-gray-700 ">* Campos requeridos</div>							
+				</div>
+			</div>		
+			
+			
+
+		</form>
+
+		
+	</div>
+	
+
+	<div class="space"><br></div>
+	
+	
+	
+	<div><br></div>
+
+	<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8" style="display: none;">MSG</div>
+	<div id="fotos" style=""></div>
+
+	
+</div>
+
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>

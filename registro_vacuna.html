@@ -1,0 +1,509 @@
+<style>
+h2 {	color: #000000; }
+</style>
+
+<script>
+    var id_persona          = 0;
+    var id_establecimiento  = 0;
+    var id_vacuna_lote      = 0;
+    var id_confirmado       = 0;
+    var id_usuario_reg      = 0;
+    var lista_espera        = 0;
+    var agenda              = 0;
+    var opciones            = "";
+    var contador            = 0;
+    
+    function getResults(d,f) {
+		
+		grecaptcha.ready(function () {
+			grecaptcha.execute(recaptcha_variable, { action: 'submit' }).then(function (token) {		
+				
+                $.ajax({
+                    async: true,
+                    method: "GET",
+                    crossDomain: true,
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': token
+                    },
+                    url: api_url + 'verificar/' + d + '/' + f,
+                    success: function (msg) {
+                        if (msg['resultado'] == "OK" || msg['resultado'] == "NOAPLICABLE" || msg['resultado'] == "CITAHECHA" || msg['resultado'] == "CITACONFIRMADA" || msg['resultado'] == "REVISIONPENDIENTE") {
+                            var p_data = msg['datos'];
+                            var jdata = JSON.stringify(p_data);
+                            setCookie("p_data", jdata, 1);
+                            var obj = JSON.parse(getCookie("p_data"));	
+                            loadInfo(obj);
+                        }
+                        else if (msg['resultado'] == "BOT") {
+                            $("#msg").html("Su solicitud falló nuestra revisión de seguridad. Intente mas tarde.").show();
+                        }
+                        else {					
+                            $("#msg").html("El DUI ingresado no ha sido encontrado.").show();
+                        }
+                    }
+                });
+
+
+                
+	
+			});
+		});
+	}//fin getresults()
+
+    function loadInfo(obj){
+
+        /*$.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'vacunas/?id=all',
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var vacunas = msg['datos'];
+                    var v = JSON.stringify(vacunas);
+                    setCookie("v", v, 1);      
+                    var obj2 = JSON.parse(getCookie("v"));	  
+                    
+                    $.each(obj2, function(index, item) {
+                        $('#vacunaInput').prepend('<option value="'+item.id+'">'+item.marca+'</option>');
+                    }); 
+                    
+
+                }
+                else {
+                    $("#msg").html("Error del servidor.").show();
+                }
+            }
+        });*/
+
+        var establecimiento = JSON.parse(getCookie("edata"));
+	    id_establecimiento = establecimiento['id_establecimiento'];
+
+        //Cambiar esta petición por la correcta
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': getCookie('token')
+            },
+            url: api_url + 'lotes/abiertos/',
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                    var lotes = msg['datos'];
+                    var l = JSON.stringify(lotes);
+                    setCookie("l", l, 1);      
+                    var obj3 = JSON.parse(getCookie("l"));	  
+                    //console.log(obj3);
+                    $.each(obj3, function(index, item) {
+                        $('#loteInput').prepend('<option value="'+item.id_vacuna_lote+'">'+item.lote.vacuna.marca+'</option>');
+                    }); 
+
+                    $('#loteInput').select2({
+                        containerCssClass: "",
+                        theme: 'bootstrap',
+                        placeholder: "Seleccione vacunador",
+                    });
+
+                }
+                else {
+                    $("#msg").html("Error del servidor.").show();
+                }
+            }
+        });
+
+
+        //Obteniendo todos los vacunadores del establecimiento
+    
+		
+		
+        datos = {"id_establecimiento":id_establecimiento};
+        
+        url = api_url + 'obtener/vacunadores';
+        $.ajax({
+            url: url,
+            data: JSON.stringify(datos),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            success: function (data) {
+                if(data['resultado'] == "OK"){
+                    $.each(data['datos'], function(index, item) {
+                        $('#vacunadorInput').append('<option value="'+item.id+'">'+item.nombre+'</option>');
+                    });
+
+                    $('#vacunadorInput').select2({
+                        containerCssClass: "",
+                        theme: 'bootstrap',
+                        placeholder: "Seleccione vacunador",
+                    });
+                }
+            },
+            error: function (jqXHR, status, err) {
+                $('#msg').html(err).show();                
+            },
+        });	
+
+        $.ajax({
+            async: true,
+            method: "GET",
+            crossDomain: true,
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            url: api_url + 'obtener/motivos_no_vacunacion/',
+            success: function (msg) {
+                if (msg['resultado'] == "OK") {
+                                        
+                    $.each(msg['datos'], function(index, item) {
+                        $('#motivosInput').prepend('<option value="'+item.id+'">'+item.nombre+'</option>');
+                    }); 
+
+                    $('#motivosInput').select2({
+                        containerCssClass: "",
+                        theme: 'bootstrap',
+                        placeholder: "Seleccione vacunador",
+                    });
+                    
+                }
+                else {
+                    $("#msg").html("Error del servidor.").show();
+                }
+            }
+        });
+
+
+        var mi_foto;
+        var t_doc;
+
+		n = new Date();
+        //Año
+        y = n.getFullYear();
+        //Mes
+        if(n.getMonth()<10)
+            m = "0" + (n.getMonth() + 1);
+        else
+            m = n.getMonth() + 1;
+        //Día
+        if(n.getDate()<10)
+            d = "0" + n.getDate();
+        else
+            d = n.getDate();
+
+        var fecha = d + "-" + m + "-" + y
+
+
+		$('#namePerson').html(obj['nombre_completo']);
+        $('#docPerson').html("Documento: " + obj['dui']);
+        $('#datePerson').html("Fecha aplicación: " +  fecha);
+
+        if (obj["tipo_doc"] == 2) {
+            mi_foto = "https://minsal-vacunacion-fotos.s3.amazonaws.com/r/" + obj['foto']['img_foto'];
+            t_doc = "Carné";
+        } else if (obj["tipo_doc"] == 1){
+            mi_foto = "https://minsal-vacunacion-fotos.s3.amazonaws.com/" + obj['foto']['img_foto'];
+            t_doc = "DUI";
+        }else{
+            mi_foto = "./images/image.png";
+            t_doc = "SIN DOCUMENTO";
+        }
+
+        $("#imagen").attr("src",mi_foto);
+        $("#imagen").attr("width","50%");
+        
+
+    }
+    function regresar(){
+        minsal_ui_cargar_vista('busqueda')
+    }
+    
+    $(document).ready(function(){
+		if(getCookie("p_agenda")){
+            //La peticion de la aplicacion vacuna viene de la agenda
+            agenda = 1;
+            id_persona      = getCookie("p_agenda");
+            dui             = getCookie("p_agenda_dui");
+            fecha_nac       = getCookie("p_agenda_fecha_nac");
+            
+            getResults(dui,fecha_nac);
+
+            setCookie("p_agenda", "", -1);
+            setCookie("p_agenda_dui", "", -1);
+            setCookie("p_agenda_fecha_nac", "", -1);
+
+        }else if (getCookie("p_lista_espera")){
+            //La peticion de la aplicacion vacuna viene de la lista de espera
+            lista_espera    = 1;
+            id_persona      = getCookie("p_lista_espera");
+            dui             = getCookie("p_lista_espera_dui");
+            fecha_nac       = getCookie("p_lista_espera_fecha_nac");
+
+            getResults(dui,fecha_nac);
+
+            setCookie("p_lista_espera", "", -1);
+            setCookie("p_lista_espera_dui", "", -1);
+            setCookie("p_lista_espera_fecha_nac", "", -1);
+        }
+        if(agenda == 0 && lista_espera == 0){
+            var obj = JSON.parse(getCookie("p_data"));	
+            id_persona = obj['id'];
+            loadInfo(obj);
+        }
+
+        $('#bt_registrar').click(function() {
+            /*if(!$('#vacunaInput').val()){
+                alert("Debe de seleccionar un tipo de vacuna.");
+            }else*/ if(!$('#loteInput').val()){
+                alert("Debe seleccionar un lote.");
+            }else if(!$('#vacunadorInput').val()){
+                alert("Debe de seleccionar un vacunador.");
+            }else {
+                $('#bt_registrar').attr("disabled", true);
+                $('#bt_cancelar').attr("disabled", true);
+                
+                id_vacuna_lote = $('#loteInput').val();
+                id_usuario_reg = $('#vacunadorInput').val();
+                id_confirmado  = getCookie("id_confirmado");
+                var htmlVar    = "";
+                
+                datos = { 
+                    "id_persona":id_persona,
+                    "id_vacuna_lote":id_vacuna_lote,
+                    "id_establecimiento": id_establecimiento, 
+                    "id_confirmado": id_confirmado,
+                    "id_usuario_reg": id_usuario_reg                
+                };
+
+                
+                var result = "";
+                
+                url = api_url + 'aplicar/vacunacion';
+                $.ajax({
+                    url: url,
+                    data: JSON.stringify(datos),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    success: function (data) {
+                        if(data['resultado'] == "OK"){
+                            $.each(data['datos'], function(index, item) {                                
+                                if(item.bandera == 1){
+                                    result += "<center><b>"+item.message+"</b></center><hr><br>";
+                                    result += "<center><b>PROXIMA CITA</b></center><br>";
+                                    result += "<b>Segunda Dosis</b><br><br>";
+                                    result += "<b>Lugar: </b> "+item.establecimiento[0].nombre+"<br>";
+                                    result += "<b>Dirección: </b> "+item.establecimiento[0].direccion+"<br>";
+                                    result += "<b>Fecha: </b> "+item.data.fecha_cupo+"<br>";
+                                    result += "<b>Hora: </b> "+item.data.hora_cupo+"<br>";
+                                    result += "<b>Plan de vacunación completo: </b> No<br><br>";
+
+
+                                    result += "<center><input type='button' class='btn btn-success btn-md' onclick='regresar()' value='FINALIZAR'></center>";
+                                }
+                                if(item.bandera == 2){
+                                    result += "<center><b>"+item.message+"</b></center><hr><br>";
+                                    
+                                    result += "<center><input type='button' class='btn btn-success btn-md' onclick='regresar()' value='FINALIZAR'></center>";
+                                }                                
+                                
+                            });
+                                                        
+                            htmlVar = result;
+                            $('#msg').html(htmlVar).show();  
+                            $('#bl2').hide();
+                            $('#bl3').show();
+                        }
+                        if(data['resultado'] == "ERROR"){
+                            $.each(data['datos'], function(index, item) {
+                                result += "<center><b>"+item+"</b></center><hr><br>";
+                                    
+                                result += "<center><input type='button' class='btn btn-success btn-md' onclick='regresar()' value='REGRESAR'></center>";
+                            });
+                            htmlVar = result;
+                            $('#msg').html(htmlVar).show(); 
+                            $('#bl2').hide();
+                            $('#bl3').show();
+
+                        }
+                    },
+                    error: function (jqXHR, status, err) {
+                        $('#msg').html(err).show();                
+                    },
+                });	
+                
+            }
+        });//Fin bt_registrar
+        $('#bt_cancelar').click(function() {
+            if(!$('#motivosInput').val()){
+                alert("Debe de seleccionar un motivo para no vacunar a esta persona.");
+            }else {
+                $('#bt_cancelar').attr("disabled", true);
+                $('#bt_registrar').attr("disabled", true);
+                                                
+                id_confirmado           = getCookie("id_confirmado");
+                id_motivo_no_vacunacion = $('#vacunadorInput').val();
+
+                var htmlVar    = "";
+                
+                datos = {                     
+                    "id_cita":id_confirmado,
+                    "id_motivo_no_vacunacion": id_motivo_no_vacunacion,
+                    "id_persona":id_persona
+                };
+                
+                var result = "";
+
+                url = api_url + 'cancelar/cita';
+                $.ajax({
+                    url: url,
+                    data: JSON.stringify(datos),
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': getCookie('token')
+                    },
+                    success: function (data) {
+                        if(data['resultado'] == "OK"){                            
+                            result += "<center><b>VACUNACION CANCELADA</b></center><hr><br>";
+                            result += "<center><input type='button' class='btn btn-success btn-md' onclick='regresar()' value='REGRESAR'></center>";
+
+                            htmlVar = result;                            
+                            $('#msg').html(htmlVar).show();  
+                            $('#bl2').hide();
+                            $('#bl3').show();
+                        }
+                        if(data['resultado'] == "ERROR"){                            
+                            result += "<center><b>ERROR EN CANCELACION DE VACUNACION</b></center><hr><br>";
+                            result += "<center><input type='button' class='btn btn-success btn-md' onclick='regresar()' value='REGRESAR'></center>";
+                            
+                            htmlVar = result;
+                            $('#msg').html(htmlVar).show(); 
+                            $('#bl2').hide();
+                            $('#bl3').show();
+
+                        }
+                    },
+                    error: function (jqXHR, status, err) {
+                        $('#msg').html(err).show();                
+                    },
+                });	
+
+
+                //console.log("id_cita: "+id_confirmado+", id_motivo_n_v: "+id_motivo_no_vacunacion+", id_persona: "+id_persona);
+
+                alert("Cancelación de Vacuna.");
+            }
+        });
+	});
+</script>
+
+<div class="contenido">
+    <div class="">
+        <h1 class="text-center m-2">REGISTRO DE VACUNACIÓN</h1>
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <div id="bl1" class="p-4 shadow bg-white round-div">
+                    
+                    <div class="form-group">
+                        <h2 class="text-center"><b>INFORMACIÓN DEL PACIENTE</b></h2>
+                        <hr>
+                    </div>
+                   
+                        <div class="form-group">
+                            <center><img src="./images/loading_black.gif" id='imagen' alt="" width="7%"> </center><!--style="display: block;margin:auto"-->
+                        </div>
+                
+                        <div class="text-center">
+                            <label id='namePerson' for=""></label><br>
+                            <label id='docPerson' for=""></label><br>
+                            <label id='datePerson' for=""></label>
+                            <label id='foto' for=""></label>
+                        </div>                                                 
+                </div>
+                <br>
+                
+            </div>
+
+            <div class="col-md-6">
+                <div id="bl2" class="p-4 shadow bg-white round-div">
+                    <form id="formRegistrar" action="" method="post">                        <div class="form-group">
+                            <h2 class="text-center"><b>REGISTRO DE VACUNACIÓN</b></h2>
+                            <hr>
+                        </div>
+                        <!--div class="form-group">
+                            <label for="">Tipo vacuna:</label>
+                            <select name="" id="vacunaInput" class="form-control">
+                                
+                            </select>
+                        </div-->
+                        <div class="form-group">
+                            <label for="">Lote (Vacuna):</label>
+                            <select name="" id="loteInput" class="form-control">
+                                
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Vacunador:</label>
+                            <select name="" id="vacunadorInput" class="form-control">
+                                
+                            </select>
+                        </div>
+                        <div class="form-group text-center">
+                            <button id="bt_registrar" type="button" class="btn btn-primary">APLICAR VACUNA</button>
+                        </div>
+                    </form>
+
+                        <div class="card border-danger">
+                            <form id="formCancelar" action="" method="post">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <h4 class="text-danger text-center">CANCELAR VACUNACIÓN</h4>
+                                    </div>
+                                    <p>
+                                        Si el ciudadano no desea o no puede
+                                        vacunarse, complete correctamente este
+                                        formulario.<b> Esta acción es irreversible</b>
+                                    </p>
+                                    <div class="form-group">
+                                        <label for="">Motivo*</label>
+                                        <select name="motivos" id="motivosInput" class="form-control">                                            
+                                        </select>
+                                    </div>
+                                    <div class="form-group text-center">
+                                        <button id="bt_cancelar" class="btn btn-danger">CANCELAR VACUNACION</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                </div>
+                <div id="bl3" class="p-4 shadow bg-white" style="display: none">
+                    <!--div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8" ></div-->
+                    <div id="msg"></div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+</div>
+
+<br><br><br><br>
+<br><br><br><br>

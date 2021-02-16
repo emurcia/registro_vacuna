@@ -1,0 +1,246 @@
+<style>
+</style>
+
+<script>
+
+	var validator1 = $("#formGeneral1").validate({
+		rules: {
+			super_buscar: { required: true }
+		},
+		messages: {
+			super_buscar: "Por favor escriba DUI o nombre de la persona"
+		}
+	});
+
+
+	function toTitleCase(str) {
+		return str.replace(
+			/\w\S*/g,
+			function (txt) {
+				return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+			}
+		);
+	}
+
+	function calcularEdad(fecha) {
+		var hoy = new Date();
+		var cumpleanos = new Date(fecha);
+		var edad = hoy.getFullYear() - cumpleanos.getFullYear();
+		var m = hoy.getMonth() - cumpleanos.getMonth();
+
+		if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
+			edad--;
+		}
+
+		return edad;
+	}
+
+	function valuesToArray(obj) {
+		return Object.keys(obj).map(function (key) { return obj[key]; });
+	}
+
+
+	function clean(obj) {
+		for (var propName in obj) {
+			if (obj[propName] === null || obj[propName] === undefined) {
+				obj[propName] = "";
+			}
+		}
+		return obj
+	}
+
+	function cl(obj) {
+		if (obj === null || obj === undefined) {
+			obj = "";
+		}
+		return obj
+	}
+
+
+	function toggle_prop(id) {
+		var g = document.getElementById(id);
+		if (g.disabled == false) {
+			g.disabled = true;
+		} else {
+			g.disabled = false;
+		}
+	}
+
+
+	function toggle_show(id) {
+		var e = document.getElementById(id);
+
+		if (e.style.display == 'none') {
+			e.style.display = 'block';
+		}
+		else {
+			e.style.display = 'none';
+		}
+	}
+
+	function addListaEspera() {
+
+		var persona = JSON.parse(getCookie("p_data"));
+		var establecimiento = JSON.parse(getCookie("edata"));
+		var id_persona = persona['id'];
+		var id_establecimiento_fisico = establecimiento['id_establecimiento'];
+
+		datos = {
+			"id_persona": id_persona,
+			"id_establecimiento_fisico": id_establecimiento_fisico
+		};
+
+		minsal_post('lista_espera'
+			, (data) => {
+				if (data['resultado'] == "OK") {
+					minsal_ui_cargar_vista('lista_espera')
+				} else {
+					$('#msg').html("Persona ya está agregada a una lista de espera").show();
+				}
+
+			}
+			, () => { $('#msg').html(err).show(); }
+			, datos
+		);
+	}
+
+	$("#bt_main").click(function () {
+		/*
+		console.log("");
+		minsal_ui_cargar_vista('apertura_cierre')
+		*/
+	});
+
+	$("#vacunar").click(function () {
+		/*console.log("VACUNAR");
+		setCookie("p_agenda", idPersona, 1);
+		setCookie("p_agenda_dui", dui, 1);
+		setCookie("p_agenda_fecha_nac", fechaNac, 1);*/
+		setCookie("id_confirmado", 0, 1);
+		minsal_ui_cargar_vista('registro_vacuna')
+	});
+
+	$("#esperar").click(function () {
+		//console.log("ESPERAR");
+		event.preventDefault();
+		addListaEspera();
+		//minsal_ui_cargar_vista('lista_espera')
+	});
+
+	$("#agendar").click(function () {
+		console.log("AGENDAR");
+		minsal_ui_cargar_vista('add_cita')
+	});
+
+	$(document).on("keydown", ":input:not(textarea)", function (event) {
+		if (event.key == "Enter") {
+			event.preventDefault();
+			$("#bt_main").click();
+		}
+	});
+	
+	
+	$(document).ready(function () {
+		var persona = clean(JSON.parse(getCookie("p_data")));
+		var nombre_completo = toTitleCase(persona['primer_nombre'] + " " + persona['segundo_nombre'] + " " + persona['tercer_nombre'] + " " + persona['primer_apellido'] + " " + persona['segundo_apellido'] + " " + persona['apellido_casada']);
+		$('#nombre_completo').html(nombre_completo);
+	});
+
+</script>
+
+<div class="contenido">
+
+	<div id="div_ini" class="container-fluid">
+		<h1 class="text-center mb-2 md:mb-4 leading-tight titulo" id="nombre_completo"></h1>
+		<div class="text_i">
+		</div>
+
+		<form id="formGeneral1" method="get" action="" novalidate="novalidate">
+			<div id="bl1">
+				<div class="shadow bg-white round-div">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-sm-12 ">
+								<table class="table" border="1">
+									<tr>
+										<td height='140px'>
+											<a id="vacunar" class="btn btn-primary btn-xl bnt-block"
+												style="height: 130px;">
+												<center><svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"
+														viewBox="0 0 24 24" fill="none" stroke="#ffffff"
+														stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+														<g fill="none" fill-rule="evenodd">
+															<path
+																d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5M15 3h6v6M10 14L20.2 3.8" />
+														</g>
+													</svg></center>
+												<font size='2'>VACUNAR</font>
+											</a>
+
+										</td>
+										<td height='140px'>
+											<a id="esperar" class="btn btn-primary btn-xl bnt-block"
+												style="height: 130px;">
+												<center><svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"
+														viewBox="0 0 24 24" fill="none" stroke="#ffffff"
+														stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+														<line x1="8" y1="6" x2="21" y2="6"></line>
+														<line x1="8" y1="12" x2="21" y2="12"></line>
+														<line x1="8" y1="18" x2="21" y2="18"></line>
+														<line x1="3" y1="6" x2="3.01" y2="6"></line>
+														<line x1="3" y1="12" x2="3.01" y2="12"></line>
+														<line x1="3" y1="18" x2="3.01" y2="18"></line>
+													</svg></center>
+												<font size='2'>
+													<p style="line-height: 19px;">ENVIAR A LISTA DE ESPERA</p>
+												</font>
+											</a>
+
+										</td>
+										<td height='140px'>
+											<a id="agendar" class="btn btn-primary btn-xl bnt-block"
+												style="height: 130px;">
+												<center><svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"
+														viewBox="0 0 24 24" fill="none" stroke="#ffffff"
+														stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+														<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+														<line x1="16" y1="2" x2="16" y2="6"></line>
+														<line x1="8" y1="2" x2="8" y2="6"></line>
+														<line x1="3" y1="10" x2="21" y2="10"></line>
+													</svg></center>
+												<font size='2'>
+													<p style="line-height: 15px;">AGENDAR FECHA POSTERIOR</p>
+												</font>
+											</a>
+
+										</td>
+
+
+									</tr>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input id="tdoc" name="tdoc" type="hidden" value="1">
+
+		</form>
+	</div>
+
+
+	<div class="space"><br></div>
+
+	<div class="text-center"></div>
+
+	<div><br></div>
+
+	<div id="msg" class="text-center border-blue-500 border bg-blue-100 p-4 font-bold mb-4 md:mb-8"
+		style="display: none;">MSG</div>
+	<div id="fotos" style=""></div>
+</div>
+
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>
+<div class="space2"><br></div>
