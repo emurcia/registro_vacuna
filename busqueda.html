@@ -315,7 +315,11 @@
 	}
 
 	function loadSelectRole(){
-        $('#role').modal('show')
+		var role_user = getCookie('role_user');
+		if(!role_user)
+        	$('#role').modal('show');
+		if(role_user != 1 && role_user != 2)
+			$('#role').modal('show');
 	}
 
 
