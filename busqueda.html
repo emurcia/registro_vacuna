@@ -19,6 +19,13 @@
 
 	var mask = IMask(element, maskOptions);*/
 
+	//-----------------------------------------------------------//
+	//													         //
+	/**/ var tipo_rol = 0;  	// 1: operador, 2: registrador	 //
+	//															 //
+	//-----------------------------------------------------------//
+
+
 	$("#v1").click(function () {
 		$('#bl3').hide();
 		$('#v1').css({
@@ -384,6 +391,7 @@
 			}*/
 			
 		//}
+		$('#role').modal({backdrop: 'static', keyboard: false});
 		loadSelectRole();
 	});
 
