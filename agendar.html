@@ -360,6 +360,17 @@
 
 	$(document).ready(function(){
 
+		var role_user = getCookie('role_user');
+		if(!role_user)
+			minsal_ui_cargar_vista('busqueda');
+		if(role_user != 1 && role_user != 2)
+			minsal_ui_cargar_vista('busqueda');
+
+		// 1: operador, 2: registrador
+		if(role_user == 1){
+			minsal_ui_cargar_vista('busqueda');
+		}
+
 		var date = new Date().toLocaleDateString();
 		$('#txtFecha').val(date);
 		$('#txtFecha').datepicker({
