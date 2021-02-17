@@ -125,7 +125,7 @@
         minsal_verificar_apertura((estado) => {
           g_establecimiento_abierto = estado;
           var estado_nombre = estado ? 'abierto' : 'cerrado';
-          var badge = estado ? 'light' : 'dark';
+          var badge = estado ? 'light' : 'danger';
           $('#nombre_establecimiento').html(dato_establecimiento + ' <span class="badge badge-' + badge + '">estado: ' + estado_nombre + '</span>');
 
           $('#modal-establecimiento').html(dato_establecimiento);
