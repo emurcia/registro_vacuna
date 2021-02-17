@@ -144,7 +144,6 @@ h2 	{	color:#000000;}
 				depto: { required: true },
 				muni: { required: true },
 				canton: { required: true },
-				colonia: { required: true },
 				calle: { required: true },
 				casa: { required: true, maxlength: 10 },
 				confirm: { required: true }
@@ -164,8 +163,12 @@ h2 	{	color:#000000;}
 
 
 		$("#bt_res").click(function () {
-			<!-- minsal_ui_cargar_vista('3btn') -->
-			<!-- var formConfirm = $("#formConfirm").serialize(); -->
+			//<!-- minsal_ui_cargar_vista('3btn') -->
+			//<!-- var formConfirm = $("#formConfirm").serialize(); -->
+			
+			if(!$("#colonia").val()){
+				$('#error1').html("Seleccione una colonia/caserio");
+			}else
 			if ($("#formConfirm").valid() == true) {
 				$("#show-div").show();
 
@@ -187,6 +190,7 @@ h2 	{	color:#000000;}
 				var dui = obj['dui'];
 				var fecha_nacimiento = obj['fecha_nacimiento'];
 
+
 				datos = {
 					"datos": {
 						"telefono": $("#phone").val(),
@@ -202,7 +206,7 @@ h2 	{	color:#000000;}
 
 				url = api_url + 'cita/confirmar/' + dui + '/' + fecha_nacimiento;
 				console.log(url);
-				$('#contenedorprincipal').load('3btn.html');
+				//$('#contenedorprincipal').load('3btn.html');
 
 				
 				$.ajax({
@@ -218,7 +222,7 @@ h2 	{	color:#000000;}
 						var p_data = msg['datos'];
 						var jdata = JSON.stringify(p_data);
 						setCookie("p_cita", jdata, 1);
-						minsal_ui_cargar_vista('3btn')
+						minsal_ui_cargar_vista('busqueda')
 					}
 				});
 				
@@ -490,7 +494,7 @@ h2 	{	color:#000000;}
 		var municipio = obj['municipio']['nombre'];
 		var edad = calcularEdad(obj['fecha_nacimiento']);
 		var fecha_nacimiento = obj['fecha_nacimiento'];
-		var foto = obj['foto']['img_url'];
+		var foto = "https://minsal-vacunacion-fotos.s3.amazonaws.com/"+obj['foto']['img_foto'];
 		
 		<!-- $("#beneficiario").html(nombre); -->
 		$("#nombre_completo").html(nombre_completo);
@@ -704,6 +708,7 @@ $("#bt_close").click(function () {
 										<select class="form-control" id="colonia">
 											<option value="1">Colonia</option>
 										</select>
+										<div id='error1' style="color: red;"></div>
 									</div>
 								</div>
 							</div>
