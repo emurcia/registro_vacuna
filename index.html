@@ -118,7 +118,9 @@
       var obj = JSON.parse(getCookie("edata"));
       $('#contenedormenu').load('menu.html', function () {
         
-        minsal_ui_cargar_vista('busqueda');
+        //$('#role').modal('hide');
+        //minsal_ui_cargar_vista('busqueda');
+        
         var dato_establecimiento = '';
 
         dato_establecimiento = obj['establecimiento_nombre'];
@@ -130,17 +132,19 @@
 
           $('#modal-establecimiento').html(dato_establecimiento);
 
-          /*if (estado) {
+          if (estado) {
+            minsal_ui_cargar_vista('busqueda');
             var hash = window.location.hash.substring(1);
             if (window.location.hash && hash) {
               minsal_ui_cargar_vista(hash);
             } else {
+              //$('#role').modal('hide');
               minsal_ui_cargar_vista('busqueda');
             }
           } else {
             //$('#modal-cerrado').modal();
             minsal_ui_cargar_vista('apertura_cierre')
-          }*/
+          }
         });
       });
     }
@@ -216,6 +220,7 @@
 
   function destCookie() {
     setCookie("token", "", -1);
+    setCookie("role_user", "", -1);
   }
 
   function destCookie2(param) {
